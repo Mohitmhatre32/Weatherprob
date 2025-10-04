@@ -1,66 +1,61 @@
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { useState } from "react";
+// src/components/dashboard/DateSelector.tsx
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DateSelectorProps {
-  value: { from: string; to: string };
-  onChange: (value: { from: string; to: string }) => void;
+  value: Date | null;
+  onDateChange: (date: Date | null) => void;
 }
 
-const DateSelector = ({ value, onChange }: DateSelectorProps) => {
-  const [fromDate, setFromDate] = useState<Date>();
-  const [toDate, setToDate] = useState<Date>();
+const months = [
+  { name: "January", days: 31 }, { name: "February", days: 29 }, { name: "March", days: 31 },
+  { name: "April", days: 30 }, { name: "May", days: 31 }, { name: "June", days: 30 },
+  { name: "July", days: 31 }, { name: "August", days: 31 }, { name: "September", days: 30 },
+  { name: "October", days: 31 }, { name: "November", days: 30 }, { name: "December", days: 31 },
+];
+
+const DateSelector = ({ value, onDateChange }: DateSelectorProps) => {
+  const selectedMonth = value ? value.getMonth() : undefined;
+  const selectedDay = value ? value.getDate() : undefined;
+
+  const handleMonthChange = (monthIndexStr: string) => {
+    const monthIndex = parseInt(monthIndexStr, 10);
+    const currentDay = selectedDay || 1;
+    const newDay = Math.min(currentDay, months[monthIndex].days);
+    onDateChange(new Date(2000, monthIndex, newDay)); // Year is arbitrary for month/day selection
+  };
+
+  const handleDayChange = (dayStr: string) => {
+    if (selectedMonth !== undefined) {
+      onDateChange(new Date(2000, selectedMonth, parseInt(dayStr, 10)));
+    }
+  };
+
+  const daysInSelectedMonth = selectedMonth !== undefined ? months[selectedMonth].days : 0;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Start Date</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {fromDate ? format(fromDate, "PPP") : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={fromDate}
-              onSelect={setFromDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+    <div className="flex gap-4">
+      <Select onValueChange={handleMonthChange} value={selectedMonth?.toString()}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select Month" />
+        </SelectTrigger>
+        <SelectContent>
+          {months.map((month, index) => (
+            <SelectItem key={month.name} value={index.toString()}>{month.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">End Date</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {toDate ? format(toDate, "PPP") : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={toDate}
-              onSelect={setToDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+      <Select onValueChange={handleDayChange} value={selectedDay?.toString()} disabled={selectedMonth === undefined}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select Day" />
+        </SelectTrigger>
+        <SelectContent>
+          {Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1).map(day => (
+            <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

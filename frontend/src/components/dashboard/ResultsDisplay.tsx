@@ -1,190 +1,120 @@
+// src/components/dashboard/ResultsDisplay.tsx
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
-import type { WeatherTheme } from "@/types/weather";
+import { TabsContent } from "@/components/ui/tabs";
+import type { WeatherStats } from "@/types/weather";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Sun, Thermometer, Wind, CloudRain, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 
 interface ResultsDisplayProps {
-  type: "overview" | "probabilities" | "trends" | "comparison";
-  theme: WeatherTheme;
+  results: WeatherStats | null;
+  isLoading: boolean;
+  error: string | null;
 }
 
-const ResultsDisplay = ({ type, theme }: ResultsDisplayProps) => {
-  const getGradientClass = () => {
-    const gradients = {
-      hot: "bg-gradient-hot",
-      cold: "bg-gradient-cold",
-      rainy: "bg-gradient-rainy",
-      windy: "bg-gradient-windy",
-      neutral: "bg-gradient-neutral",
-    };
-    return gradients[theme];
-  };
+const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
 
-  if (type === "overview") {
+  const chartData = results ? results.chart_data.years.map((year, index) => ({
+    year,
+    "High Temp (°F)": results.chart_data.high_temps[index]
+  })) : [];
+
+  const trendIcon = results ?
+    results.trend.temp_trend_label === 'warming' ? <TrendingUp className="h-5 w-5 text-red-500" /> :
+      results.trend.temp_trend_label === 'cooling' ? <TrendingDown className="h-5 w-5 text-blue-500" /> :
+        <Minus className="h-5 w-5 text-gray-500" /> : null;
+
+  if (isLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Summary Card */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Weather Analysis Summary</CardTitle>
-            <CardDescription>Based on NASA Earth Observation historical data</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className={`h-48 rounded-lg ${getGradientClass()} flex items-center justify-center text-white mb-6`}>
-              <div className="text-center">
-                <h3 className="text-4xl font-bold mb-2">Select Parameters</h3>
-                <p className="text-lg opacity-90">Choose location, dates, and variables to begin analysis</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-3xl font-bold text-primary">--</div>
-                <div className="text-sm text-muted-foreground mt-1">Avg Temp</div>
-              </div>
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-3xl font-bold text-primary">--</div>
-                <div className="text-sm text-muted-foreground mt-1">Risk Level</div>
-              </div>
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-3xl font-bold text-primary">--</div>
-                <div className="text-sm text-muted-foreground mt-1">Data Points</div>
-              </div>
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-3xl font-bold text-primary">--</div>
-                <div className="text-sm text-muted-foreground mt-1">Confidence</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="shadow-md">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <CardTitle className="text-lg">Favorable Conditions</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Analysis will show days with optimal weather conditions for outdoor activities.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-500" />
-                <CardTitle className="text-lg">Risk Alerts</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Get notified about potential extreme weather probabilities based on historical patterns.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <p className="text-lg text-muted-foreground">Fetching and analyzing decades of NASA data...</p>
       </div>
     );
   }
 
-  if (type === "probabilities") {
+  if (error) {
     return (
-      <Card className="shadow-lg animate-fade-in">
-        <CardHeader>
-          <CardTitle>Weather Probability Analysis</CardTitle>
-          <CardDescription>Statistical likelihood of extreme conditions</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Extreme Heat Probability</span>
-              <span className="text-sm text-muted-foreground">--</span>
-            </div>
-            <Progress value={0} className="h-2" />
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Heavy Rainfall Probability</span>
-              <span className="text-sm text-muted-foreground">--</span>
-            </div>
-            <Progress value={0} className="h-2" />
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Strong Wind Probability</span>
-              <span className="text-sm text-muted-foreground">--</span>
-            </div>
-            <Progress value={0} className="h-2" />
-          </div>
-
-          <div className="p-4 bg-muted/50 rounded-lg mt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              Select location, dates, and weather variables to view probability analysis
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed">
+        <p className="text-lg text-red-500">{error}</p>
+      </div>
     );
   }
 
-  if (type === "trends") {
+  if (!results) {
     return (
-      <Card className="shadow-lg animate-fade-in">
-        <CardHeader>
-          <CardTitle>Climate Trend Analysis</CardTitle>
-          <CardDescription>Long-term weather pattern changes</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center">
-            <div className="text-center space-y-2">
-              <TrendingUp className="w-12 h-12 mx-auto text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Trend visualization will appear here</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium">Increasing Trends</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Climate patterns showing upward movement</p>
-            </div>
-
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingDown className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-medium">Decreasing Trends</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Climate patterns showing downward movement</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed text-center p-4">
+        <Info className="h-10 w-10 text-primary mb-4" />
+        <h3 className="text-xl font-semibold">Ready for Analysis</h3>
+        <p className="text-lg text-muted-foreground">Select a location and date, then click "Analyze" to see your weather insights.</p>
+      </div>
     );
   }
 
   return (
-    <Card className="shadow-lg animate-fade-in">
-      <CardHeader>
-        <CardTitle>Location Comparison</CardTitle>
-        <CardDescription>Compare weather patterns across multiple locations</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 bg-muted/30 rounded-lg flex items-center justify-center">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">Add locations to compare weather patterns</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <TabsContent value="overview">
+        <Card>
+          <CardHeader>
+            <CardTitle>Historical Overview</CardTitle>
+            <CardDescription>Based on {results.total_years_analyzed} years of data.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Average Conditions</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between"><span>Avg. High:</span> <span className="font-bold">{results.averages.avg_high_f}°F</span></div>
+                <div className="flex justify-between"><span>Avg. Low:</span> <span className="font-bold">{results.averages.avg_low_f}°F</span></div>
+                <div className="flex justify-between"><span>Avg. Wind:</span> <span className="font-bold">{results.averages.avg_wind_mph} mph</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Historical Records</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between"><span>Record High:</span> <span className="font-bold text-red-500">{results.records.record_high_f}°F</span></div>
+                <div className="flex justify-between"><span>Record Low:</span> <span className="font-bold text-blue-500">{results.records.record_low_f}°F</span></div>
+                <div className="flex justify-between items-center"><span>Temp Trend:</span> <span className="font-bold flex items-center gap-2 capitalize">{results.trend.temp_trend_label} {trendIcon}</span></div>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="probabilities">
+        <Card>
+          <CardHeader>
+            <CardTitle>Probability of Extreme Weather</CardTitle>
+            <CardDescription>The likelihood of experiencing these conditions on this specific day.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="p-4 bg-red-500/10 rounded-lg"><Sun className="mx-auto h-8 w-8 text-red-500 mb-2" /><p className="text-3xl font-bold">{results.probabilities.hot}%</p><p className="text-sm text-muted-foreground">Very Hot</p></div>
+            <div className="p-4 bg-blue-500/10 rounded-lg"><Thermometer className="mx-auto h-8 w-8 text-blue-500 mb-2" /><p className="text-3xl font-bold">{results.probabilities.cold}%</p><p className="text-sm text-muted-foreground">Very Cold</p></div>
+            <div className="p-4 bg-cyan-500/10 rounded-lg"><CloudRain className="mx-auto h-8 w-8 text-cyan-500 mb-2" /><p className="text-3xl font-bold">{results.probabilities.wet}%</p><p className="text-sm text-muted-foreground">Very Wet</p></div>
+            <div className="p-4 bg-slate-500/10 rounded-lg"><Wind className="mx-auto h-8 w-8 text-slate-500 mb-2" /><p className="text-3xl font-bold">{results.probabilities.windy}%</p><p className="text-sm text-muted-foreground">Very Windy</p></div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="trends">
+        <Card>
+          <CardHeader>
+            <CardTitle>High Temperature Trend Over Time</CardTitle>
+            <CardDescription>Maximum daily temperature recorded for this date each year since 1990.</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[400px] w-full">
+            <ResponsiveContainer>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="High Temp (°F)" stroke="#ef4444" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </>
   );
 };
 
