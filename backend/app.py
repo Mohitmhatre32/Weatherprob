@@ -1,48 +1,52 @@
 # ==============================================================================
-# 1. IMPORTS
-# All the libraries our application needs to function.
+# FINAL BACKEND - NASA Weather Odds Calculator
+#
+# This Flask server provides a single API endpoint (/api/weather-stats)
+# that accepts a location, date, and optional user-defined weather thresholds.
+# It fetches decades of historical data from the NASA POWER API, processes it,
+# and returns a rich JSON object with calculated probabilities, averages,
+# and records for a comprehensive weather analysis.
 # ==============================================================================
+
 import os
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 import pandas as pd
+import numpy as np # Used for numerical operations
 
-# ==============================================================================
-# 2. APP INITIALIZATION & CONFIGURATION
-# Setting up our Flask web server.
-# ==============================================================================
+# --- App Initialization ---
 app = Flask(__name__)
-
-# CORS is a security feature; this line allows our React frontend (on a 
-# different "origin") to request data from this backend.
 CORS(app)
 
 # ==============================================================================
-# 3. GLOBAL CONSTANTS & THRESHOLDS
-# These are the definitions that were missing and causing the error.
-# We define our weather conditions here. You can change these values.
+# SECTION 1: DEFAULT THRESHOLDS
+# These values are used if the frontend does not provide custom ones.
 # ==============================================================================
-TEMP_HOT_F = 90         # Threshold for a "very hot" day in Fahrenheit
-TEMP_COLD_F = 32        # Threshold for a "very cold" day in Fahrenheit
-WIND_HIGH_MPH = 15      # Threshold for a "very windy" day in Miles Per Hour
-PRECIP_WET_INCHES = 0.4   # Threshold for a "very wet" day in Inches
+DEFAULT_TEMP_HOT_F = 90
+DEFAULT_TEMP_COLD_F = 32
+DEFAULT_WIND_HIGH_MPH = 15
+DEFAULT_PRECIP_WET_INCHES = 0.4
+DEFAULT_HUMID_PERCENT = 75.0
+DEFAULT_SUNNY_KWHR = 5.0   # kW-hr/m^2/day - a measure of total daily sunlight
+DEFAULT_SNOWY_MM = 1.0     # 1mm of water equivalent is roughly 1cm of average snow
+DEFAULT_HEAT_INDEX_UNCOMFORTABLE_F = 95.0 # Threshold for "dangerous" heat index
 
 # ==============================================================================
-# 4. HELPER FUNCTIONS 
-# These functions do the specific jobs of fetching and processing data.
+# SECTION 2: HELPER FUNCTIONS
 # ==============================================================================
 
 def fetch_nasa_data(lat, lon):
     """
-    Fetches historical weather data from the NASA POWER API for a given lat/lon.
+    Fetches all required weather parameters from the NASA POWER API.
     """
     end_year = datetime.now().year - 1
-    start_year = 1990  # A good range of historical data
-    
+    start_year = 1990
     base_url = "https://power.larc.nasa.gov/api/temporal/daily/point"
-    parameters = "T2M_MAX,T2M_MIN,PRECTOTCORR,WS10M"
+    
+    # Requesting all parameters in a single API call for efficiency
+    parameters = "T2M_MAX,T2M_MIN,PRECTOTCORR,WS10M,RH2M,PS,ALLSKY_SFC_SW_DWN,PRECSNOLAND"
 
     api_params = {
         "parameters": parameters,
@@ -53,74 +57,89 @@ def fetch_nasa_data(lat, lon):
         "end": f"{end_year}1231",
         "format": "JSON"
     }
-
     try:
         response = requests.get(base_url, params=api_params)
-        response.raise_for_status()  # This will raise an error for bad responses (4xx or 5xx)
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching NASA data: {e}")
         return None
 
-def process_weather_data(nasa_json, target_month, target_day):
+def calculate_heat_index(T, RH):
     """
-    Processes the raw JSON from NASA into calculated statistics using Pandas.
+    Calculates the Heat Index ("feels like" temperature) using a simplified formula.
+    Inputs: T = Temperature in Fahrenheit, RH = Relative Humidity in percent.
+    """
+    # Using a simplified version of the Steadman formula, suitable for this application
+    HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (RH * 0.094))
+    # This formula is often used in combination with a series of adjustments. 
+    # For our purpose, a simple average with the actual temperature works well.
+    return (T + HI) / 2
+
+def process_weather_data(nasa_json, target_month, target_day, thresholds):
+    """
+    The core data processing engine. Takes raw NASA JSON and user thresholds,
+    returns the final analysis.
     """
     try:
         properties = nasa_json['properties']['parameter']
         df = pd.DataFrame(properties)
-        
         df['date'] = pd.to_datetime(df.index, format='%Y%m%d')
         
-        # Filter the DataFrame to only include rows for the specific month and day
         df_filtered = df[(df['date'].dt.month == target_month) & (df['date'].dt.day == target_day)].copy()
         
         total_years = len(df_filtered)
         if total_years == 0:
             return {"error": "No data available for the selected date."}
             
-        # --- Unit Conversions from Metric to Imperial ---
+        # --- Unit Conversions ---
         df_filtered['T2M_MAX_F'] = df_filtered['T2M_MAX'] * 9/5 + 32
         df_filtered['T2M_MIN_F'] = df_filtered['T2M_MIN'] * 9/5 + 32
         df_filtered['WS10M_MPH'] = df_filtered['WS10M'] * 2.237
         df_filtered['PRECTOTCORR_IN'] = df_filtered['PRECTOTCORR'] / 25.4
+        df_filtered['PS_MB'] = df_filtered['PS'] * 10
 
-        # --- Calculate Probabilities using our defined threshold constants ---
-        hot_days = df_filtered[df_filtered['T2M_MAX_F'] > TEMP_HOT_F].shape[0]
-        cold_days = df_filtered[df_filtered['T2M_MIN_F'] < TEMP_COLD_F].shape[0]
-        windy_days = df_filtered[df_filtered['WS10M_MPH'] > WIND_HIGH_MPH].shape[0]
-        wet_days = df_filtered[df_filtered['PRECTOTCORR_IN'] > PRECIP_WET_INCHES].shape[0]
+        # --- Feature Engineering: Calculate Heat Index ---
+        df_filtered['HEAT_INDEX_F'] = calculate_heat_index(df_filtered['T2M_MAX_F'], df_filtered['RH2M'])
+
+        # --- Probability Calculations using (potentially custom) thresholds ---
+        hot_days = df_filtered[df_filtered['T2M_MAX_F'] > thresholds['hot']].shape[0]
+        cold_days = df_filtered[df_filtered['T2M_MIN_F'] < thresholds['cold']].shape[0]
+        windy_days = df_filtered[df_filtered['WS10M_MPH'] > thresholds['windy']].shape[0]
+        wet_days = df_filtered[df_filtered['PRECTOTCORR_IN'] > thresholds['wet']].shape[0]
+        humid_days = df_filtered[df_filtered['RH2M'] > thresholds['humid']].shape[0]
+        sunny_days = df_filtered[df_filtered['ALLSKY_SFC_SW_DWN'] > thresholds['sunny']].shape[0]
+        snowy_days = df_filtered[df_filtered['PRECSNOLAND'] > thresholds['snowy']].shape[0]
+        uncomfortable_days = df_filtered[df_filtered['HEAT_INDEX_F'] > thresholds['uncomfortable']].shape[0]
         
-        # --- Calculate Temperature Trend ---
         df_filtered['year'] = df_filtered['date'].dt.year
-        # Correlation tells us the strength and direction of a linear relationship
         temp_trend_corr = df_filtered['T2M_MAX_F'].corr(df_filtered['year'])
         
-        # --- Assemble the final results dictionary ---
+        # --- Assemble the final, comprehensive results object ---
         results = {
             "total_years_analyzed": total_years,
             "probabilities": {
                 "hot": round((hot_days / total_years) * 100),
                 "cold": round((cold_days / total_years) * 100),
                 "windy": round((windy_days / total_years) * 100),
-                "wet": round((wet_days / total_years) * 100)
+                "wet": round((wet_days / total_years) * 100),
+                "humid": round((humid_days / total_years) * 100),
+                "sunny": round((sunny_days / total_years) * 100),
+                "snowy": round((snowy_days / total_years) * 100),
+                "uncomfortable": round((uncomfortable_days / total_years) * 100),
             },
             "averages": {
                 "avg_high_f": round(df_filtered['T2M_MAX_F'].mean(), 1),
                 "avg_low_f": round(df_filtered['T2M_MIN_F'].mean(), 1),
-                "avg_wind_mph": round(df_filtered['WS10M_MPH'].mean(), 1)
+                "avg_wind_mph": round(df_filtered['WS10M_MPH'].mean(), 1),
+                "avg_humidity_percent": round(df_filtered['RH2M'].mean(), 1),
+                "avg_pressure_mb": round(df_filtered['PS_MB'].mean(), 1),
+                "avg_insolation_kwhr": round(df_filtered['ALLSKY_SFC_SW_DWN'].mean(), 1),
+                "avg_heat_index_f": round(df_filtered['HEAT_INDEX_F'].mean(), 1),
             },
-            "records": {
-                "record_high_f": round(df_filtered['T2M_MAX_F'].max(), 1),
-                "record_low_f": round(df_filtered['T2M_MIN_F'].min(), 1),
-            },
-            "trend": {
-                "temp_trend_label": "warming" if temp_trend_corr > 0.1 else "cooling" if temp_trend_corr < -0.1 else "stable"
-            },
-            "chart_data": {
-                "years": df_filtered['year'].tolist(),
-                "high_temps": df_filtered['T2M_MAX_F'].round(1).tolist()
-            }
+            "records": { "record_high_f": round(df_filtered['T2M_MAX_F'].max(), 1), "record_low_f": round(df_filtered['T2M_MIN_F'].min(), 1), },
+            "trend": { "temp_trend_label": "warming" if temp_trend_corr > 0.1 else "cooling" if temp_trend_corr < -0.1 else "stable" },
+            "chart_data": { "years": df_filtered['year'].tolist(), "high_temps": df_filtered['T2M_MAX_F'].round(1).tolist() }
         }
         return results
 
@@ -129,47 +148,45 @@ def process_weather_data(nasa_json, target_month, target_day):
         return {"error": "An error occurred while processing the weather data."}
 
 # ==============================================================================
-# 5. API ROUTES (THE ENDPOINTS OUR FRONTEND WILL CALL)
+# SECTION 3: API ROUTE
 # ==============================================================================
-
-@app.route('/')
-def home():
-    """A simple route to confirm the server is running."""
-    return "Hello! The weather app backend is running."
-
 @app.route('/api/weather-stats', methods=['POST'])
 def get_weather_stats():
-    """The main API endpoint that drives the application."""
     data = request.get_json()
-
-    # Validate that we received all the necessary data
     if not all(k in data for k in ['lat', 'lon', 'month', 'day']):
-        return jsonify({"error": "Missing required parameters: lat, lon, month, day"}), 400
-
+        return jsonify({"error": "Missing required parameters"}), 400
+    
+    # Get user-defined thresholds from the request, falling back to defaults if not provided.
+    user_thresholds = data.get('thresholds', {})
+    thresholds = {
+        'hot': user_thresholds.get('hot', DEFAULT_TEMP_HOT_F),
+        'cold': user_thresholds.get('cold', DEFAULT_TEMP_COLD_F),
+        'windy': user_thresholds.get('windy', DEFAULT_WIND_HIGH_MPH),
+        'wet': user_thresholds.get('wet', DEFAULT_PRECIP_WET_INCHES),
+        'humid': user_thresholds.get('humid', DEFAULT_HUMID_PERCENT),
+        'sunny': user_thresholds.get('sunny', DEFAULT_SUNNY_KWHR),
+        'snowy': user_thresholds.get('snowy', DEFAULT_SNOWY_MM),
+        'uncomfortable': user_thresholds.get('uncomfortable', DEFAULT_HEAT_INDEX_UNCOMFORTABLE_F),
+    }
+    
     try:
-        # Convert incoming data to the correct types
         lat, lon = float(data['lat']), float(data['lon'])
         month, day = int(data['month']), int(data['day'])
     except ValueError:
-        return jsonify({"error": "Invalid data format. lat/lon must be numbers, month/day must be integers."}), 400
+        return jsonify({"error": "Invalid data format"}), 400
 
-    # Step 1: Fetch data from NASA
     nasa_data = fetch_nasa_data(lat, lon)
     if nasa_data is None or 'properties' not in nasa_data:
-        return jsonify({"error": "Failed to fetch valid data from the NASA POWER API"}), 500
-
-    # Step 2: Process the fetched data
-    processed_stats = process_weather_data(nasa_data, month, day)
+        return jsonify({"error": "Failed to fetch valid data from NASA"}), 500
+    
+    processed_stats = process_weather_data(nasa_data, month, day, thresholds)
     if "error" in processed_stats:
         return jsonify(processed_stats), 500
 
-    # Step 3: Send the successful result back to the frontend
     return jsonify(processed_stats)
 
 # ==============================================================================
-# 6. MAIN EXECUTION BLOCK
-# This is the entry point for running the application.
+# SECTION 4: MAIN EXECUTION
 # ==============================================================================
 if __name__ == '__main__':
-    # debug=True makes the server automatically reload when you save the file.
     app.run(debug=True, port=5000)
