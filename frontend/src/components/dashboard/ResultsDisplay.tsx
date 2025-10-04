@@ -6,6 +6,7 @@ import type { WeatherStats } from "@/types/weather";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 // --- Import new icons from lucide-react ---
 import { Sun, Thermometer, Wind, CloudRain, Droplets, Snowflake, ShieldAlert, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
+import TrendsChartContainer from "../TrendsChartContainer";
 
 interface ResultsDisplayProps {
   results: WeatherStats | null;
@@ -119,24 +120,7 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
       </TabsContent>
 
       <TabsContent value="trends">
-        <Card>
-          <CardHeader>
-            <CardTitle>High Temperature Trend Over Time</CardTitle>
-            <CardDescription>Maximum daily temperature recorded for this date each year since 1990.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[400px] w-full">
-            <ResponsiveContainer>
-              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="High Temp (°F)" stroke="#ef4444" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <TrendsChartContainer chartData={results.chart_data} />
       </TabsContent>
     </>
   );

@@ -68,5 +68,11 @@ export interface WeatherStats {
     chart_data: {
         years: number[];
         high_temps: number[];
+        low_temps: number[];
+        
+        wind_speeds: number[];
+        humidity: number[];
+        insolation: number[];
+        precipitation: number[];
     };
 }
