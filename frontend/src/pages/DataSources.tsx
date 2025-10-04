@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Satellite, Globe, TrendingUp } from "lucide-react";
+import { Database, TrendingUp, Code, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DataSources = () => {
@@ -9,9 +10,9 @@ const DataSources = () => {
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Data Sources</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Data Pipeline</h1>
             <p className="text-xl text-muted-foreground">
-              Powered by NASA's Earth Observation Systems
+              Leveraging NASA's Analysis-Ready Data for Actionable Insights
             </p>
           </div>
         </div>
@@ -22,64 +23,32 @@ const DataSources = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto space-y-12">
             <div>
-              <h2 className="text-3xl font-bold mb-6">NASA EarthData</h2>
+              <h2 className="text-3xl font-bold mb-6">The NASA POWER Project</h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                Our application leverages NASA's extensive Earth observation datasets, which represent decades 
-                of continuous global weather monitoring. These datasets provide comprehensive coverage of 
-                atmospheric conditions, making them ideal for historical probability analysis.
+                Our application is built on the NASA Prediction of Worldwide Energy Resources (POWER) project. 
+                POWER provides analysis-ready data specifically tailored for developers and researchers,
+                acting as a streamlined gateway to NASA's vast repository of Earth observation data. 
+                This allows us to perform complex historical analysis efficiently and accurately.
               </p>
             </div>
 
-            {/* Data Sources Grid */}
+            <h3 className="text-2xl font-bold text-center">Core Underlying Datasets</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-2 hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-hot rounded-lg flex items-center justify-center mb-4">
-                    <Satellite className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle>MODIS</CardTitle>
-                  <CardDescription>Moderate Resolution Imaging Spectroradiometer</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Provides daily global observations of land surface temperature, vegetation, cloud cover, 
-                    and aerosols. Essential for understanding temperature patterns and environmental conditions.
-                  </p>
-                </CardContent>
-              </Card>
-
               <Card className="border-2 hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                   <div className="w-12 h-12 bg-gradient-cold rounded-lg flex items-center justify-center mb-4">
                     <Database className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle>MERRA-2</CardTitle>
-                  <CardDescription>Modern-Era Retrospective analysis</CardDescription>
+                  <CardDescription>Modern-Era Retrospective analysis for Research and Applications</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Reanalysis dataset providing atmospheric variables including temperature, wind, precipitation, 
-                    and humidity with global coverage from 1980 to present.
+                    A global atmospheric reanalysis dataset providing key variables like temperature, wind, and precipitation. 
+                    It serves as a primary foundational source for the POWER project's data.
                   </p>
                 </CardContent>
               </Card>
-
-              <Card className="border-2 hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-rainy rounded-lg flex items-center justify-center mb-4">
-                    <Globe className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle>GPM</CardTitle>
-                  <CardDescription>Global Precipitation Measurement</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Advanced precipitation data from satellite observations, providing detailed rainfall and 
-                    snowfall measurements across the globe every 3 hours.
-                  </p>
-                </CardContent>
-              </Card>
-
               <Card className="border-2 hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                   <div className="w-12 h-12 bg-gradient-windy rounded-lg flex items-center justify-center mb-4">
@@ -90,27 +59,19 @@ const DataSources = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    High-resolution atmospheric data including wind patterns, dust concentrations, and other 
-                    meteorological variables crucial for comprehensive weather analysis.
+                    A high-resolution atmospheric model that provides the data for many of the near real-time 
+                    parameters available through the POWER API, ensuring timely and accurate information.
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Weather Variables */}
             <div className="mt-12">
-              <h2 className="text-3xl font-bold mb-6">Available Weather Variables</h2>
+              <h2 className="text-3xl font-bold mb-6">Weather Variables Analyzed</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
-                  "Temperature (surface & air)",
-                  "Precipitation (rain & snow)",
-                  "Wind Speed & Direction",
-                  "Relative Humidity",
-                  "Solar Radiation",
-                  "Cloud Cover",
-                  "Atmospheric Pressure",
-                  "Dust & Aerosol Concentration",
-                  "Evapotranspiration"
+                  "Max/Min Temperature", "Precipitation (Rain)", "Snowfall", "Wind Speed",
+                  "Relative Humidity", "Sunlight (Insolation)", "Atmospheric Pressure", "Heat Index ('Feels Like')"
                 ].map((variable, index) => (
                   <div key={index} className="bg-muted/30 p-4 rounded-lg border">
                     <p className="font-medium">{variable}</p>
@@ -119,37 +80,37 @@ const DataSources = () => {
               </div>
             </div>
 
-            {/* Data Access */}
             <div className="mt-12 p-8 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
-              <h3 className="text-2xl font-bold mb-4">Data Access & APIs</h3>
+              <h3 className="text-2xl font-bold mb-4">Explore the Data Source</h3>
               <p className="text-muted-foreground mb-6">
-                We utilize several NASA data access tools and APIs to retrieve and process the data:
+                While we use the POWER API for programmatic access, the best way to explore the data visually is through NASA's official Data Access Viewer.
               </p>
               <ul className="space-y-2 text-muted-foreground mb-6">
                 <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span><strong>Giovanni:</strong> Online visualization and analysis tool</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span><strong>OpenDAP:</strong> Direct data access protocol</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  <span><strong>netCDF4:</strong> Data format for array-oriented scientific data</span>
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                    <Map className="w-5 h-5 text-primary" />
+                  </div>
+                  <span><strong>Interactive Map:</strong> Visualize the datasets and select points to retrieve data manually.</span>
                 </li>
               </ul>
-              <Button variant="outline">Learn More About Our API</Button>
+              
+              {/* --- THIS IS THE VERIFIED, CORRECT, AND MOST APPROPRIATE LINK --- */}
+              <Button variant="outline" asChild>
+                <a href="https://power.larc.nasa.gov/data-access-viewer/" target="_blank" rel="noopener noreferrer">
+                  Explore the NASA POWER Data Portal
+                </a>
+              </Button>
+              {/* ------------------------------------------------------------------ */}
+
             </div>
 
-            {/* Data Quality */}
             <div className="mt-12">
-              <h2 className="text-3xl font-bold mb-6">Data Quality & Reliability</h2>
+              <h2 className="text-3xl font-bold mb-6">Data Quality & Processing</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                All NASA Earth observation data undergoes rigorous quality control and validation processes. 
-                The datasets we use are peer-reviewed, continuously updated, and widely used by the scientific 
-                community. Our application applies additional preprocessing steps including outlier detection, 
-                spatial interpolation, and temporal smoothing to ensure the highest quality insights.
+                The NASA POWER data is already rigorously quality-controlled and validated. 
+                Our application builds upon this by performing on-the-fly analysis using Python and the Pandas library. 
+                For each user query, we fetch decades of data, filter it to the specific day of the year, 
+                perform unit conversions, and calculate statistical probabilities to provide actionable insights.
               </p>
             </div>
           </div>

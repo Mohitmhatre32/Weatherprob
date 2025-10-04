@@ -1,3 +1,5 @@
+// src/components/Navigation.tsx
+
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Cloud, Menu, X } from "lucide-react";
@@ -13,7 +15,7 @@ const Navigation = () => {
     { label: "Dashboard", path: "/dashboard" },
     { label: "About", path: "/about" },
     { label: "Data Sources", path: "/data-sources" },
-    { label: "API Docs", path: "/api-docs" },
+    // { label: "API Docs", path: "/api-docs" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -30,17 +32,18 @@ const Navigation = () => {
             <span className="font-bold text-xl hidden sm:inline">WeatherProb</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* --- CHANGE HERE: Increased the gap between navigation buttons --- */}
+          <div className="hidden md:flex items-center gap-2">
             {navItems.map((item) => (
               <Link key={item.path} to={item.path}>
                 <Button
                   variant="ghost"
                   className={cn(
                     "transition-all duration-300",
+                    "px-3", 
                     isActive(item.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "hover:bg-muted hover:text-muted-foreground"
                   )}
                 >
                   {item.label}
@@ -83,10 +86,11 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start",
+                    "w-full justify-start text-lg",
+                    "py-6", 
                     isActive(item.path)
                       ? "bg-primary text-primary-foreground"
-                      : ""
+                      : "hover:bg-muted hover:text-muted-foreground"
                   )}
                 >
                   {item.label}
@@ -94,7 +98,7 @@ const Navigation = () => {
               </Link>
             ))}
             <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full mt-2">Try Now</Button>
+              <Button className="w-full mt-2 text-lg py-6">Try Now</Button>
             </Link>
           </div>
         )}
