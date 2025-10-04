@@ -1,0 +1,70 @@
+# ==============================================================================
+# General / Operating System Files
+# These are common files that should almost always be ignored.
+# ==============================================================================
+.DS_Store
+Thumbs.db
+*.log
+.swo
+.swp
+
+# ==============================================================================
+# IDE / Editor Specific Files
+# Ignore configuration files from popular code editors.
+# ==============================================================================
+.idea/
+.vscode/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# ==============================================================================
+# Python / Flask Backend
+# Ignores files and folders specific to our backend setup.
+# ==============================================================================
+
+# Virtual Environment folder
+# This is machine-specific and can be very large.
+/backend/venv/
+/backend/.venv/
+
+# Python cache files
+/backend/__pycache__/
+*.pyc
+
+# Environment variables file
+# IMPORTANT: Never commit files with secrets or API keys.
+/backend/.env
+
+# Flask instance folder
+/backend/instance/
+
+
+# ==============================================================================
+# Node.js / React Frontend
+# Ignores files and folders specific to our frontend setup.
+# ==============================================================================
+
+# Dependencies folder
+# This is the most important one. It's huge and can be re-created by running `npm install`.
+/frontend/node_modules/
+
+# Production build folder
+# This is generated code and doesn't need to be in version control.
+/frontend/build/
+
+# Debug logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+
+# Environment variables files
+# IMPORTANT: Never commit files with secrets or API keys.
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# Optional folder for coverage reports
+/frontend/coverage/
