@@ -135,31 +135,31 @@ Daily Regional API for generating the global heatmap feature
 
 WeatherProb’s roadmap includes exciting next steps:
 
-🗺️ Regional Polygon Analysis — Draw areas on the map to aggregate weather stats.
-
-🎯 Activity-Based Recommendations — Automatically find the best dates for skiing, hiking, or beach days.
-
-🔗 Public API — Expose the analysis engine to developers for open data use.
-
-🧠 About the Challenge
-
-Hackathon: NASA Space Apps Challenge 2025
-
-Challenge Name: “Will It Rain on My Parade?”
+   🗺️ Regional Polygon Analysis — Draw areas on the map to aggregate weather stats.
+   
+   🎯 Activity-Based Recommendations — Automatically find the best dates for skiing, hiking, or beach days.
+   
+   🔗 Public API — Expose the analysis engine to developers for open data use.
+   
+🧠 About the Challenge : 
+   
+   Hackathon: NASA Space Apps Challenge 2025
+   
+   Challenge Name: “Will It Rain on My Parade?”
 
 👥 Authors
 
 Mohit Mhatre
 
-GitHub: @Mohitmhatre32
+GitHub: https://github.com/Mohitmhatre32
 
-LinkedIn: mohitmhatre
+LinkedIn: www.linkedin.com/in/mohitmhatre
 
 Yukta Chaudhari
 
-GitHub: @YourGitHubHandle
+GitHub: https://github.com/yuktac1011
 
-LinkedIn: Your LinkedIn Profile
+LinkedIn:https://www.linkedin.com/in/yukta-chaudhari-725065303/
 
 🪪 License
 
