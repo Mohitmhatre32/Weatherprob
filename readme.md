@@ -8,9 +8,6 @@
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 
-**Live Demo:** [weatherprob.vercel.app](https://your-app-url.vercel.app)
-
-![WeatherProb Dashboard Screenshot](https://your-screenshot-link.png)
 
 ---
 
@@ -50,20 +47,6 @@ WeatherProb is packed with tools designed to make weather analysis intuitive and
 - ⚙️ **Personalized Thresholds** — Customize what “hot,” “cold,” or “windy” means for you.
 - 📈 **Interactive Trend Charts** — Explore long-term data for temperature, humidity, and precipitation.
 - 💾 **Data Export** — Download your analysis as **JSON** or **CSV** for external use.
-
----
-
-## 🖼️ Screenshots
-
-*(Replace placeholders with your actual screenshots)*
-
-| Main Dashboard | Location Comparison |
-| :---: | :---: |
-| ![Main Dashboard](https://your-dashboard-image.png) | ![Location Comparison](https://your-comparison-image.png) |
-
-| Perfect Day Finder | Regional Heatmap |
-| :---: | :---: |
-| ![Perfect Day Finder](https://your-finder-image.png) | ![Heatmap Explorer](https://your-heatmap-image.png) |
 
 ---
 
