@@ -6,15 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Loader2, PartyPopper } from 'lucide-react';
-import type { Location } from '@/types/weather'; // Assuming Location type is here
+import type { Location } from '@/types/weather';
 import { DateRange } from 'react-day-picker';
-
-// --- THIS IS THE FIX ---
-// Use a standard ES Module import. This is compatible with Vite.
 import LocationSelector from '@/components/dashboard/LocationSelector';
-// ----------------------
-
-// Type for the results from our new API endpoint
+import Loader from '@/hooks/loader'; 
 interface PerfectDayResult {
   period: string;
   score: number;
@@ -25,7 +20,6 @@ interface PerfectDayResult {
 interface PerfectDayFinderProps {
   // This function will allow us to update the main dashboard's date range
   onPeriodSelect: (range: DateRange) => void;
-  // We don't need to pass thresholds from the parent anymore, as this component is self-contained.
 }
 
 const criteriaOptions = [
@@ -68,7 +62,6 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
           lat: location.lat,
           lon: location.lon,
           criteria: selectedCriteria,
-          // We can let the backend use its defaults for thresholds for this feature
         }),
       });
       const data = await response.json();
@@ -85,7 +78,7 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
     const year = new Date().getFullYear();
     const startDate = new Date(year, 0); // Start of the year
     const endDate = new Date(year, 0);
-    // Adjust setDate to correctly calculate date from day of year
+    // Correctly calculate date from day of year
     startDate.setDate(startDate.getDate() + result.start_day - 1);
     endDate.setDate(endDate.getDate() + result.end_day - 1);
     
@@ -131,10 +124,17 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
             <CardTitle>Top Recommendations</CardTitle>
             <CardDescription>The best times of year matching your criteria, ranked by probability.</CardDescription>
           </CardHeader>
-          <CardContent>
-            {error && <p className="text-destructive font-semibold p-4 bg-destructive/10 rounded-md">{error}</p>}
-            {results.length > 0 && (
-              <>
+          {/* --- 2. THE MODIFIED CARD CONTENT --- */}
+          <CardContent className="min-h-[300px] flex items-center justify-center">
+            {isLoading ? (
+              // If loading, show the Loader component
+              <Loader />
+            ) : error ? (
+              // If there's an error, show the error message
+              <p className="text-destructive font-semibold p-4 bg-destructive/10 rounded-md">{error}</p>
+            ) : results.length > 0 ? (
+              // If we have results, show the list
+              <div className="w-full">
                 <ul className="space-y-3">
                   {results.map(result => (
                     <li key={result.period} onClick={() => handleResultClick(result)} className="flex justify-between items-center p-4 bg-muted/50 rounded-lg cursor-pointer hover:bg-primary/10 transition-colors">
@@ -144,9 +144,9 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
                   ))}
                 </ul>
                 <p className="text-sm text-muted-foreground pt-4 mt-4 border-t">Click on a result to automatically set the date range and view the detailed analysis in the "Single Analysis" tab.</p>
-              </>
-            )}
-            {!isLoading && results.length === 0 && !error && (
+              </div>
+            ) : (
+              // Otherwise, show the initial "ready" message
               <p className="text-muted-foreground text-center py-10">Your results will appear here after analysis.</p>
             )}
           </CardContent>

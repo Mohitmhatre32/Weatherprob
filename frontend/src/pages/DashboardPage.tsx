@@ -16,6 +16,7 @@ import type { Location, WeatherStats } from "@/types/weather";
 import { DateRange } from "react-day-picker";
 import CombinedAnalysis from "@/components/dashboard/CombinedAnalysis";
 import ComparisonTool from "@/components/dashboard/ComparisonTool";
+import PerfectDayFinder from "@/components/dashboard/PerfectDayFinder";
 
 const convertJsonToCsv = (data: WeatherStats): string => {
   const flatData = {
@@ -121,6 +122,7 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState("dashboard");
 
   const handleAnalyze = async () => {
     if (!location || !dateRange || !dateRange.from || !dateRange.to) {
@@ -190,20 +192,29 @@ const DashboardPage = () => {
     </div>
   );
 
-  return (
+  
+  const handlePeriodSelect = (selectedRange: DateRange) => {
+    setDateRange(selectedRange);
+    setActiveTab("dashboard");
+  };
+ return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Weather Analytics Dashboard</h1>
         <p className="text-muted-foreground">Powered by NASA Earth Observation Data</p>
       </div>
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8 max-w-2xl mx-auto">
+      {/* --- 4. CONTROL THE TABS WITH STATE --- */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* --- 5. ADD THE NEW TAB TRIGGER --- */}
+        <TabsList className="grid w-full grid-cols-4 mb-8 max-w-2xl mx-auto">
           <TabsTrigger value="dashboard">Single Analysis</TabsTrigger>
-          <TabsTrigger value="comparison">Comparison Analysis</TabsTrigger>
+          <TabsTrigger value="finder">Best Time Finder</TabsTrigger>
+          <TabsTrigger value="comparison">Comparison</TabsTrigger>
           <TabsTrigger value="timeseries">Time Series</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard">
+          {/* ... (Your original "dashboard" content is unchanged) ... */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <Card className="shadow-lg"><CardHeader><CardTitle>1. Location</CardTitle><CardDescription>Enter a location or click the map</CardDescription></CardHeader><CardContent><LocationSelector onLocationSelect={setLocation} /></CardContent></Card>
@@ -236,6 +247,12 @@ const DashboardPage = () => {
           </div>
         </TabsContent>
 
+        {/* --- 6. ADD THE NEW TAB CONTENT --- */}
+        <TabsContent value="finder">
+          <PerfectDayFinder onPeriodSelect={handlePeriodSelect} />
+        </TabsContent>
+
+        {/* Your other tabs are unchanged */}
         <TabsContent value="comparison">
           <ComparisonTool />
         </TabsContent>
