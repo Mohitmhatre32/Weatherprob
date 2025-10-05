@@ -47,7 +47,7 @@ const Footer = () => {
           </div>
 
           {/* Resources */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
@@ -71,24 +71,24 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Social */}
           <div>
             <h3 className="font-semibold mb-4">Connect</h3>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://github.com/Mohitmhatre32"
                 className="w-10 h-10 bg-background border rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300"
               >
                 <Github className="w-5 h-5" />
               </a>
-              <a
+              {/* <a
                 href="#"
                 className="w-10 h-10 bg-background border rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300"
               >
                 <Twitter className="w-5 h-5" />
-              </a>
+              </a> */}
               <a
                 href="#"
                 className="w-10 h-10 bg-background border rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300"
