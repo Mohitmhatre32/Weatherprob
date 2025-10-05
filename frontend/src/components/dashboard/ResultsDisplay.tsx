@@ -68,7 +68,6 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
     return <div className="flex flex-col items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed text-center p-4"><Info className="h-10 w-10 text-primary mb-4" /><h3 className="text-xl font-semibold">Ready for Analysis</h3><p className="text-lg text-muted-foreground">Select a location and date range, then click "Analyze".</p></div>;
   }
 
-  const trendIcon = results.trend.temp_trend_label === 'warming' ? <TrendingUp className="h-5 w-5 text-red-500" /> : results.trend.temp_trend_label === 'cooling' ? <TrendingDown className="h-5 w-5 text-blue-500" /> : <Minus className="h-5 w-5 text-gray-500" />;
 
   return (
     <>

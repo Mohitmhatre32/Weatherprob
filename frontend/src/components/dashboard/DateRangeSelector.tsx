@@ -68,13 +68,13 @@ const DateRangeSelector = ({ value, onDateChange }: DateRangeSelectorProps) => {
                 <div className="flex gap-2">
                     <Select onValueChange={handleFromMonthChange} value={fromMonth?.toString()}>
                         <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[9999]">
                             {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select onValueChange={handleFromDayChange} value={fromDay?.toString()} disabled={fromMonth === undefined}>
                         <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[9999]">
                             {Array.from({ length: fromDaysInMonth }, (_, i) => i + 1).map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
                         </SelectContent>
                     </Select>

@@ -16,11 +16,8 @@ import type { Location, WeatherStats } from "@/types/weather";
 import { DateRange } from "react-day-picker";
 import CombinedAnalysis from "@/components/dashboard/CombinedAnalysis";
 import ComparisonTool from "@/components/dashboard/ComparisonTool";
-// --- 1. IMPORT THE NEW COMPONENT ---
-import PerfectDayFinder from "@/components/dashboard/PerfectDayFinder";
 
-// This CSV conversion function is unchanged
-const convertJsonToCsv = (data: WeatherStats): string => { /* ... (your original function) ... */ 
+const convertJsonToCsv = (data: WeatherStats): string => {
   const flatData = {
     total_years_analyzed: data.total_years_analyzed, prob_hot_percent: data.probabilities.hot,
     prob_cold_percent: data.probabilities.cold, prob_windy_percent: data.probabilities.windy,
@@ -124,16 +121,12 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
 
-  const handleAnalyze = async () => { /* ... (your original function is unchanged) ... */ 
+  const handleAnalyze = async () => {
     if (!location || !dateRange || !dateRange.from || !dateRange.to) {
       setValidationError("Please select a location and a complete date range before analyzing.");
       return;
     }
-
-  
-  window.scrollTo({ top: 0, behavior: "smooth" });
     setIsLoading(true);
     setError(null);
     setResults(null);
@@ -161,7 +154,8 @@ const DashboardPage = () => {
       setIsLoading(false);
     }
   };
-  const handleDownloadJson = () => { /* ... (your original function is unchanged) ... */ 
+
+  const handleDownloadJson = () => {
     if (!results || !location || !dateRange || !dateRange.from) return;
     const dateString = format(dateRange.from, "yyyy-MM-dd");
     const locationString = location.name.split(',')[0].replace(/ /g, '_');
@@ -172,7 +166,8 @@ const DashboardPage = () => {
     link.download = fileName;
     link.click();
   };
-  const handleDownloadCsv = () => { /* ... (your original function is unchanged) ... */ 
+
+  const handleDownloadCsv = () => {
     if (!results || !location || !dateRange || !dateRange.from) return;
     const dateString = format(dateRange.from, "yyyy-MM-dd");
     const locationString = location.name.split(',')[0].replace(/ /g, '_');
@@ -185,11 +180,6 @@ const DashboardPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handlePeriodSelect = (selectedRange: DateRange) => {
-    setDateRange(selectedRange);
-    setActiveTab("dashboard");
   };
 
   const initialContent = (
@@ -206,17 +196,6 @@ const DashboardPage = () => {
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Weather Analytics Dashboard</h1>
         <p className="text-muted-foreground">Powered by NASA Earth Observation Data</p>
       </div>
-
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        {/* --- 4. CONTROL THE TABS WITH YOUR NEW STATE --- */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* --- 5. ADD THE NEW "FINDER" TAB --- */}
-          <TabsList className="grid w-full grid-cols-4 mb-8 max-w-3xl mx-auto">
-            <TabsTrigger value="dashboard">Single Analysis</TabsTrigger>
-            <TabsTrigger value="finder">Best Time Finder</TabsTrigger>
-            <TabsTrigger value="comparison">Comparison</TabsTrigger>
-            <TabsTrigger value="explorer">Heatmap Explorer</TabsTrigger>
-          </TabsList>
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8 max-w-2xl mx-auto">
           <TabsTrigger value="dashboard">Single Analysis</TabsTrigger>
