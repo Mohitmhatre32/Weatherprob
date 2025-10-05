@@ -7,6 +7,8 @@ import About from "@/pages/About";
 import DashboardPage from "@/pages/DashboardPage";
 import DataSources from "@/pages/DataSources";
 import NotFound from "@/pages/NotFound";
+// --- ADDED: The new Time Series page ---
+import TimeSeriesPage from "@/pages/TimeSeriesPage";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          {/* --- ADDED: The new route --- */}
+          <Route path="/timeseries" element={<TimeSeriesPage />} />
           <Route path="/data-sources" element={<DataSources />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

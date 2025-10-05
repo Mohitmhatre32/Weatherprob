@@ -11,7 +11,6 @@ interface TrendsChartContainerProps {
   chartData: WeatherStats['chart_data'];
 }
 
-// Configuration for each chart we want to display
 const chartConfigs = [
   { dataKey: 'High Temp (°F)', strokeColor: '#ef4444', name: 'High Temperature' },
   { dataKey: 'Low Temp (°F)', strokeColor: '#3b82f6', name: 'Low Temperature' },
@@ -21,10 +20,14 @@ const chartConfigs = [
   { dataKey: 'Precipitation (in)', strokeColor: '#0ea5e9', name: 'Precipitation' },
 ];
 
+const getUnitFromDataKey = (dataKey: string) => {
+  const match = dataKey.match(/\(([^)]+)\)/);
+  return match ? match[1] : '';
+};
+
 const TrendsChartContainer = ({ chartData }: TrendsChartContainerProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // useMemo hook transforms the data into the format Recharts expects, and only re-calculates when chartData changes.
   const rechartsData = useMemo(() => {
     return chartData.years.map((year, index) => ({
       year,
@@ -37,43 +40,45 @@ const TrendsChartContainer = ({ chartData }: TrendsChartContainerProps) => {
     }));
   }, [chartData]);
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % chartConfigs.length);
-  };
-
-  const handlePrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + chartConfigs.length) % chartConfigs.length);
-  };
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % chartConfigs.length);
+  const handlePrevious = () => setCurrentIndex((prev) => (prev - 1 + chartConfigs.length) % chartConfigs.length);
 
   const currentChart = chartConfigs[currentIndex];
+  const yAxisUnit = getUnitFromDataKey(currentChart.dataKey);
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Historical Trends</CardTitle>
-            <CardDescription>Daily measurements for this date each year since 1990.</CardDescription>
+            <CardTitle>Year-over-Year Trends</CardTitle>
+            <CardDescription>Average measurements for the selected period each year.</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={handlePrevious}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleNext}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <Button variant="outline" size="icon" onClick={handlePrevious}><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" onClick={handleNext}><ChevronRight className="h-4 w-4" /></Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="h-[400px] w-full">
         <div className="text-center mb-4 font-semibold text-lg">{currentChart.name}</div>
         <ResponsiveContainer>
-          <LineChart data={rechartsData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <LineChart data={rechartsData} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
+            <XAxis
+              dataKey="year"
+              label={{ value: 'Year', position: 'insideBottom', offset: -15 }}
+              domain={['dataMin', 'dataMax']}
+            />
+            <YAxis
+              label={{ value: yAxisUnit, angle: -90, position: 'insideLeft', offset: -5 }}
+              tickFormatter={(value) => Number(value).toFixed(1)}
+              domain={['auto', 'auto']}
+            />
+            <Tooltip
+              formatter={(value) => [`${Number(value).toFixed(2)} ${yAxisUnit}`, currentChart.name]}
+            />
+            <Legend verticalAlign="bottom" />
             <Line type="monotone" dataKey={currentChart.dataKey} stroke={currentChart.strokeColor} strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>

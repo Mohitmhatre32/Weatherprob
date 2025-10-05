@@ -51,4 +51,13 @@ export interface WeatherStats {
     combined_probabilities?: {
         [key: string]: number;
     };
+    full_time_series?: {
+        date: string;
+        'High Temp (°F)': number;
+        'Low Temp (°F)': number;
+        'Wind Speed (mph)': number;
+        'Humidity (%)': number;
+        'Sunlight (kWh/m²)': number;
+        'Precipitation (in)': number;
+    }[];
 }

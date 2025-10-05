@@ -1,65 +1,102 @@
-// src/components/dashboard/DateRangeSelector.tsx
-
-import * as React from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRange } from "react-day-picker";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-
 interface DateRangeSelectorProps {
-    className?: string;
     value: DateRange | undefined;
-    onDateChange: (date: DateRange | undefined) => void;
+    onDateChange: (range: DateRange | undefined) => void;
 }
 
-const DateRangeSelector = ({ className, value, onDateChange }: DateRangeSelectorProps) => {
+const months = [
+    { name: "Jan", value: 0 }, { name: "Feb", value: 1 }, { name: "Mar", value: 2 },
+    { name: "Apr", value: 3 }, { name: "May", value: 4 }, { name: "Jun", value: 5 },
+    { name: "Jul", value: 6 }, { name: "Aug", value: 7 }, { name: "Sep", value: 8 },
+    { name: "Oct", value: 9 }, { name: "Nov", value: 10 }, { name: "Dec", value: 11 },
+];
+
+const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+};
+
+const DateRangeSelector = ({ value, onDateChange }: DateRangeSelectorProps) => {
+    const fromMonth = value?.from?.getMonth();
+    const fromDay = value?.from?.getDate();
+    const toMonth = value?.to?.getMonth();
+    const toDay = value?.to?.getDate();
+
+    // Use a fixed year (e.g., a leap year) for calculations to keep it simple
+    const year = 2024;
+
+    const handleFromMonthChange = (monthStr: string) => {
+        const month = parseInt(monthStr, 10);
+        const day = fromDay || 1;
+        const daysInNewMonth = getDaysInMonth(month, year);
+        const newDay = Math.min(day, daysInNewMonth);
+        const newFrom = new Date(year, month, newDay);
+        onDateChange({ from: newFrom, to: value?.to });
+    };
+
+    const handleFromDayChange = (dayStr: string) => {
+        if (fromMonth === undefined) return;
+        const day = parseInt(dayStr, 10);
+        const newFrom = new Date(year, fromMonth, day);
+        onDateChange({ from: newFrom, to: value?.to });
+    };
+
+    const handleToMonthChange = (monthStr: string) => {
+        const month = parseInt(monthStr, 10);
+        const day = toDay || 1;
+        const daysInNewMonth = getDaysInMonth(month, year);
+        const newDay = Math.min(day, daysInNewMonth);
+        const newTo = new Date(year, month, newDay);
+        onDateChange({ from: value?.from, to: newTo });
+    };
+
+    const handleToDayChange = (dayStr: string) => {
+        if (toMonth === undefined) return;
+        const day = parseInt(dayStr, 10);
+        const newTo = new Date(year, toMonth, day);
+        onDateChange({ from: value?.from, to: newTo });
+    };
+
+    const fromDaysInMonth = fromMonth !== undefined ? getDaysInMonth(fromMonth, year) : 0;
+    const toDaysInMonth = toMonth !== undefined ? getDaysInMonth(toMonth, year) : 0;
+
     return (
-        <div className={cn("grid gap-2", className)}>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button
-                        id="date"
-                        variant={"outline"}
-                        className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !value && "text-muted-foreground"
-                        )}
-                    >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {value?.from ? (
-                            value.to ? (
-                                <>
-                                    {format(value.from, "LLL dd, y")} -{" "}
-                                    {format(value.to, "LLL dd, y")}
-                                </>
-                            ) : (
-                                format(value.from, "LLL dd, y")
-                            )
-                        ) : (
-                            <span>Pick a date range</span>
-                        )}
-                    </Button>
-        </PopoverTrigger>
-                {/* --- MODIFIED: Added a high z-index to ensure it appears over the map --- */}
-                <PopoverContent className="w-auto p-0 z-[2000]" align="start">
-                    <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={value?.from}
-                        selected={value}
-                        onSelect={onDateChange}
-                        numberOfMonths={2}
-                    />
-                </PopoverContent>
-            </Popover>
+        <div className="space-y-4">
+            <div>
+                <p className="text-sm font-medium mb-2">From</p>
+                <div className="flex gap-2">
+                    <Select onValueChange={handleFromMonthChange} value={fromMonth?.toString()}>
+                        <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                        <SelectContent>
+                            {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <Select onValueChange={handleFromDayChange} value={fromDay?.toString()} disabled={fromMonth === undefined}>
+                        <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                        <SelectContent>
+                            {Array.from({ length: fromDaysInMonth }, (_, i) => i + 1).map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <div>
+                <p className="text-sm font-medium mb-2">To</p>
+                <div className="flex gap-2">
+                    <Select onValueChange={handleToMonthChange} value={toMonth?.toString()}>
+                        <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                        <SelectContent>
+                            {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <Select onValueChange={handleToDayChange} value={toDay?.toString()} disabled={toMonth === undefined}>
+                        <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                        <SelectContent>
+                            {Array.from({ length: toDaysInMonth }, (_, i) => i + 1).map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
         </div>
     );
 };

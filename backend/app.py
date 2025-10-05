@@ -1,7 +1,8 @@
 # ==============================================================================
-# FINAL BACKEND - NASA Weather Odds Calculator (v4 - Combined Factors)
+# FINAL BACKEND - NASA Weather Odds Calculator (v5 - Full Time Series)
 #
-# Adds calculation of combined probabilities (e.g., "hot AND windy").
+# Adds a `full_time_series` key to the response, providing raw daily data
+# for the new hydrology-style time series viewer.
 # ==============================================================================
 
 import os
@@ -13,7 +14,6 @@ import pandas as pd
 import numpy as np
 from scipy.stats import gaussian_kde
 
-# --- App Initialization ---
 app = Flask(__name__)
 CORS(app)
 
@@ -57,7 +57,7 @@ def calculate_heat_index(T, RH):
     return (T + HI) / 2
 
 def process_weather_data(nasa_json, start_date_str, end_date_str, thresholds, combined_factors):
-    """Core engine, now with combined probability calculation."""
+    """Core engine, now with combined probability and full time series calculation."""
     try:
         properties = nasa_json['properties']['parameter']
         df = pd.DataFrame(properties)
@@ -94,23 +94,21 @@ def process_weather_data(nasa_json, start_date_str, end_date_str, thresholds, co
         combined_prob_results = {}
         if combined_factors and len(combined_factors) > 1:
             conditions = []
-            if 'hot' in combined_factors:
-                conditions.append(df_in_range['T2M_MAX_F'] > thresholds['hot'])
-            if 'cold' in combined_factors:
-                conditions.append(df_in_range['T2M_MIN_F'] < thresholds['cold'])
-            if 'windy' in combined_factors:
-                conditions.append(df_in_range['WS10M_MPH'] > thresholds['windy'])
-            if 'wet' in combined_factors:
-                conditions.append(df_in_range['PRECTOTCORR_IN'] > thresholds['wet'])
-            if 'humid' in combined_factors:
-                conditions.append(df_in_range['RH2M'] > thresholds['humid'])
-            if 'sunny' in combined_factors:
-                conditions.append(df_in_range['ALLSKY_SFC_SW_DWN'] > thresholds['sunny'])
-            
+            factor_map = {
+                'hot': df_in_range['T2M_MAX_F'] > thresholds['hot'],
+                'cold': df_in_range['T2M_MIN_F'] < thresholds['cold'],
+                'windy': df_in_range['WS10M_MPH'] > thresholds['windy'],
+                'wet': df_in_range['PRECTOTCORR_IN'] > thresholds['wet'],
+                'humid': df_in_range['RH2M'] > thresholds['humid'],
+                'sunny': df_in_range['ALLSKY_SFC_SW_DWN'] > thresholds['sunny']
+            }
+            for factor in combined_factors:
+                if factor in factor_map:
+                    conditions.append(factor_map[factor])
             if conditions:
                 final_condition = np.logical_and.reduce(conditions)
                 combined_days = df_in_range[final_condition].shape[0]
-                key = " & ".join(factor.capitalize() for factor in combined_factors)
+                key = " & ".join(f.capitalize() for f in combined_factors)
                 combined_prob_results[key] = round((combined_days / total_days_analyzed) * 100)
 
         df_in_range['year'] = df_in_range['date'].dt.year
@@ -122,13 +120,21 @@ def process_weather_data(nasa_json, start_date_str, end_date_str, thresholds, co
         x_min, x_max = high_temp_data.min() - 10, high_temp_data.max() + 10
         x_vals = np.linspace(x_min, x_max, 100)
         y_vals = kde(x_vals)
-        
-        distribution_data = {
-            "high_temp": {
-                "points": [{"temp": round(x, 1), "density": round(y, 4)} for x, y in zip(x_vals, y_vals)],
-                "mean": round(high_temp_data.mean(), 1)
-            }
+        distribution_data = {"high_temp": {"points": [{"temp": round(x, 1), "density": round(y, 4)} for x, y in zip(x_vals, y_vals)], "mean": round(high_temp_data.mean(), 1)}}
+
+        # --- ADDED: Prepare the full time series data ---
+        df_for_timeseries = df_in_range.copy().sort_values(by='date')
+        df_for_timeseries['date_str'] = df_for_timeseries['date'].dt.strftime('%Y-%m-%d')
+        timeseries_columns = {
+            'date_str': 'date',
+            'T2M_MAX_F': 'High Temp (°F)',
+            'T2M_MIN_F': 'Low Temp (°F)',
+            'WS10M_MPH': 'Wind Speed (mph)',
+            'RH2M': 'Humidity (%)',
+            'ALLSKY_SFC_SW_DWN': 'Sunlight (kWh/m²)',
+            'PRECTOTCORR_IN': 'Precipitation (in)'
         }
+        full_time_series_data = df_for_timeseries[list(timeseries_columns.keys())].rename(columns=timeseries_columns).round(2).to_dict('records')
 
         results = {
             "total_years_analyzed": int(df_in_range['year'].nunique()),
@@ -141,44 +147,41 @@ def process_weather_data(nasa_json, start_date_str, end_date_str, thresholds, co
             "averages": {
                 "avg_high_f": round(df_in_range['T2M_MAX_F'].mean(), 1), "avg_low_f": round(df_in_range['T2M_MIN_F'].mean(), 1),
                 "avg_wind_mph": round(df_in_range['WS10M_MPH'].mean(), 1), "avg_humidity_percent": round(df_in_range['RH2M'].mean(), 1),
-                "avg_pressure_mb": round(df_in_range.get('PS_MB', -999).mean(), 1), 
-                "avg_insolation_kwhr": round(df_in_range['ALLSKY_SFC_SW_DWN'].mean(), 1),
+                "avg_pressure_mb": round(df_in_range['PS_MB'].mean(), 1), "avg_insolation_kwhr": round(df_in_range['ALLSKY_SFC_SW_DWN'].mean(), 1),
                 "avg_heat_index_f": round(df_in_range['HEAT_INDEX_F'].mean(), 1),
             },
-            "records": { "record_high_f": round(df_in_range['T2M_MAX_F'].max(), 1), "record_low_f": round(df_in_range['T2M_MIN_F'].min(), 1), },
-            "trend": { "temp_trend_label": "warming" if temp_trend_corr > 0.1 else "cooling" if temp_trend_corr < -0.1 else "stable" },
+            "records": {"record_high_f": round(df_in_range['T2M_MAX_F'].max(), 1), "record_low_f": round(df_in_range['T2M_MIN_F'].min(), 1)},
+            "trend": {"temp_trend_label": "warming" if temp_trend_corr > 0.1 else "cooling" if temp_trend_corr < -0.1 else "stable"},
             "chart_data": {
-                "years": df_annual_avg.index.tolist(),
-                "high_temps": df_annual_avg['T2M_MAX_F'].round(1).tolist(),
-                "low_temps": df_annual_avg['T2M_MIN_F'].round(1).tolist(),
-                "wind_speeds": df_annual_avg['WS10M_MPH'].round(1).tolist(),
-                "humidity": df_annual_avg['RH2M'].round(1).tolist(),
-                "insolation": df_annual_avg['ALLSKY_SFC_SW_DWN'].round(1).tolist(),
+                "years": df_annual_avg.index.tolist(), "high_temps": df_annual_avg['T2M_MAX_F'].round(1).tolist(),
+                "low_temps": df_annual_avg['T2M_MIN_F'].round(1).tolist(), "wind_speeds": df_annual_avg['WS10M_MPH'].round(1).tolist(),
+                "humidity": df_annual_avg['RH2M'].round(1).tolist(), "insolation": df_annual_avg['ALLSKY_SFC_SW_DWN'].round(1).tolist(),
                 "precipitation": df_annual_avg['PRECTOTCORR_IN'].round(2).tolist()
             },
             "distributions": distribution_data,
-            "combined_probabilities": combined_prob_results
+            "combined_probabilities": combined_prob_results,
+            "full_time_series": full_time_series_data
         }
         return results
     except Exception as e:
         print(f"Error processing data: {e}")
         return {"error": "An error occurred while processing the weather data."}
 
-# ==============================================================================
-# SECTION 3: API ROUTE & MAIN EXECUTION
-# ==============================================================================
 @app.route('/api/weather-stats', methods=['POST'])
 def get_weather_stats():
     data = request.get_json()
     if not all(k in data for k in ['lat', 'lon', 'start_date', 'end_date']):
         return jsonify({"error": "Missing required parameters"}), 400
     
-    user_thresholds = data.get('thresholds', {})
     thresholds = {
-        'hot': user_thresholds.get('hot', DEFAULT_TEMP_HOT_F), 'cold': user_thresholds.get('cold', DEFAULT_TEMP_COLD_F),
-        'windy': user_thresholds.get('windy', DEFAULT_WIND_HIGH_MPH), 'wet': user_thresholds.get('wet', DEFAULT_PRECIP_WET_INCHES),
-        'humid': user_thresholds.get('humid', DEFAULT_HUMID_PERCENT), 'sunny': user_thresholds.get('sunny', DEFAULT_SUNNY_KWHR),
-        'snowy': user_thresholds.get('snowy', DEFAULT_SNOWY_MM), 'uncomfortable': user_thresholds.get('uncomfortable', DEFAULT_HEAT_INDEX_UNCOMFORTABLE_F),
+        'hot': data.get('thresholds', {}).get('hot', DEFAULT_TEMP_HOT_F),
+        'cold': data.get('thresholds', {}).get('cold', DEFAULT_TEMP_COLD_F),
+        'windy': data.get('thresholds', {}).get('windy', DEFAULT_WIND_HIGH_MPH),
+        'wet': data.get('thresholds', {}).get('wet', DEFAULT_PRECIP_WET_INCHES),
+        'humid': data.get('thresholds', {}).get('humid', DEFAULT_HUMID_PERCENT),
+        'sunny': data.get('thresholds', {}).get('sunny', DEFAULT_SUNNY_KWHR),
+        'snowy': data.get('thresholds', {}).get('snowy', DEFAULT_SNOWY_MM),
+        'uncomfortable': data.get('thresholds', {}).get('uncomfortable', DEFAULT_HEAT_INDEX_UNCOMFORTABLE_F),
     }
     
     try:
@@ -189,7 +192,7 @@ def get_weather_stats():
         return jsonify({"error": "Invalid data format"}), 400
 
     nasa_data = fetch_nasa_data(lat, lon)
-    if nasa_data is None or 'properties' not in nasa_data:
+    if nasa_data is None:
         return jsonify({"error": "Failed to fetch valid data from NASA"}), 500
     
     processed_stats = process_weather_data(nasa_data, start_date, end_date, thresholds, combined_factors)

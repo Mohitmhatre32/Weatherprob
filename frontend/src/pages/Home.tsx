@@ -1,15 +1,10 @@
-// src/pages/Home.tsx
-
 import { Button } from "@/components/ui/button";
-// Your original icons are all here
 import { Cloud, CloudRain, Wind, Sun, Snowflake, TrendingUp, Map, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from "three";
-import "../index.css"; // Ensure global styles are imported
+import "../index.css";
 
-// This custom hook correctly and dynamically imports the Vanta library for Vite.
-// This is the only "new" code, and it's self-contained.
 const useVanta = () => {
   const vantaRef = useRef(null);
   const [vantaEffect, setVantaEffect] = useState<any>(null);

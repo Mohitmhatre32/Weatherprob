@@ -7,6 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { Sun, Thermometer, Wind, CloudRain, Droplets, Snowflake, ShieldAlert, TrendingUp, TrendingDown, Minus, Info, AlertTriangle, PartyPopper, CheckSquare } from "lucide-react";
 import TrendsChartContainer from "../TrendsChartContainer";
 import Loader from "@/hooks/loader";
+import TimeSeriesViewer from './TimeSeriesViewer';
 
 interface ResultsDisplayProps {
   results: WeatherStats | null;
@@ -67,6 +68,8 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
     return <div className="flex flex-col items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed text-center p-4"><Info className="h-10 w-10 text-primary mb-4" /><h3 className="text-xl font-semibold">Ready for Analysis</h3><p className="text-lg text-muted-foreground">Select a location and date range, then click "Analyze".</p></div>;
   }
 
+  const trendIcon = results.trend.temp_trend_label === 'warming' ? <TrendingUp className="h-5 w-5 text-red-500" /> : results.trend.temp_trend_label === 'cooling' ? <TrendingDown className="h-5 w-5 text-blue-500" /> : <Minus className="h-5 w-5 text-gray-500" />;
+
   return (
     <>
       <TabsContent value="overview">
@@ -114,21 +117,17 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
               <div className="p-4 bg-slate-500/10 rounded-lg"><Wind className="mx-auto h-8 w-8 text-slate-500 mb-2" /><p className="text-3xl font-bold">{results.probabilities.windy}%</p><p className="text-sm text-muted-foreground">Very Windy</p></div>
             </CardContent>
           </Card>
-
           {results.combined_probabilities && Object.keys(results.combined_probabilities).length > 0 && (
             <Card>
               <CardHeader><CardTitle>Combined Probability</CardTitle><CardDescription>The historical likelihood of the selected conditions occurring on the same day.</CardDescription></CardHeader>
-              <CardContent>
-                {/* --- MODIFIED: The styling is changed to match the other cards --- */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  {Object.entries(results.combined_probabilities).map(([key, value]) => (
-                    <div key={key} className="p-4 bg-purple-500/10 rounded-lg">
-                      <CheckSquare className="mx-auto h-8 w-8 text-purple-500 mb-2" />
-                      <p className="text-3xl font-bold">{value}%</p>
-                      <p className="text-sm text-muted-foreground break-words">{key}</p>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                {Object.entries(results.combined_probabilities).map(([key, value]) => (
+                  <div key={key} className="p-4 bg-purple-500/10 rounded-lg">
+                    <CheckSquare className="mx-auto h-8 w-8 text-purple-500 mb-2" />
+                    <p className="text-3xl font-bold">{value}%</p>
+                    <p className="text-sm text-muted-foreground break-words">{key}</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
@@ -145,9 +144,9 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
           <CardContent className="h-[70vh] w-full p-0">
             {results.distributions?.high_temp && (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={results.distributions.high_temp.points} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
+                <AreaChart data={results.distributions.high_temp.points} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="temp" type="number" domain={['dataMin', 'dataMax']} label={{ value: 'High Temperature (°F)', position: 'insideBottom', offset: -15 }} tickFormatter={(value) => `${value}°`} />
+                  <XAxis dataKey="temp" type="number" domain={['dataMin', 'dataMax']} label={{ value: 'High Temperature (°F)', position: 'insideBottom', offset: -10 }} tickFormatter={(value) => `${value}°`} />
                   <YAxis label={{ value: 'Probability Density', angle: -90, position: 'insideLeft' }} tick={false} />
                   <Tooltip formatter={(value, name, props) => [`${props.payload.temp}°F`, "Temperature"]} labelFormatter={() => ''} />
                   <defs><linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} /><stop offset="95%" stopColor="#8884d8" stopOpacity={0} /></linearGradient></defs>
@@ -160,8 +159,12 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
           </CardContent>
         </Card>
       </TabsContent>
+
+      <TabsContent value="timeseries">
+        {results.full_time_series && <TimeSeriesViewer timeSeriesData={results.full_time_series} />}
+      </TabsContent>
     </>
   );
-};
+}
 
 export default ResultsDisplay;
