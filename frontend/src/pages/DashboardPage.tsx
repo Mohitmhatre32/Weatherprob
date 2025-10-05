@@ -18,6 +18,8 @@ import CombinedAnalysis from "@/components/dashboard/CombinedAnalysis";
 import ComparisonTool from "@/components/dashboard/ComparisonTool";
 import PerfectDayFinder from "@/components/dashboard/PerfectDayFinder";
 
+const apiUrl = `${import.meta.env.VITE_API_BASE_URL}`;
+
 const convertJsonToCsv = (data: WeatherStats): string => {
   const flatData = {
     total_years_analyzed: data.total_years_analyzed,
@@ -185,7 +187,7 @@ const DashboardPage = () => {
     setValidationError(null);
     const formatDate = (date: Date) => format(date, "yyyy-MM-dd");
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/weather-stats', {
+      const response = await fetch(`${apiUrl}/api/weather-stats`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
