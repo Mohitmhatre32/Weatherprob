@@ -1,20 +1,3 @@
-Of course. A great README is the "front door" to your project. For a competition, it's one of the most critical pieces of your submission. It needs to be clear, comprehensive, and impressive.
-
-This README is structured to tell the story of your project, showcase its features, and make it easy for judges and other developers to understand and run your code.
-
-Instructions:
-
-Create a new file named README.md in the absolute root of your project folder (my-weather-app/).
-
-Copy and paste the entire block of Markdown code below into that file.
-
-Crucially, replace the placeholder text like [your-app-url.vercel.app], [Link to a GIF Demo], and [Your Name] with your actual information.
-
-code
-Markdown
-download
-content_copy
-expand_less
 # WeatherProb: Historical Weather Probability Insights
 
 > Plan your future, historically. An advanced weather analytics dashboard powered by NASA Earth Observation Data.
@@ -49,11 +32,9 @@ Our mission is to empower users to move beyond guesswork and make data-driven de
 
 WeatherProb is a feature-rich platform designed to provide a comprehensive and personalized weather analysis experience.
 
-*   🌍 **Interactive 3D Globe & Map:** A stunning and intuitive interface (Vanta.js & Leaflet) for selecting any location on Earth with pin-point accuracy.
 *   📊 **Single Analysis Dashboard:** The core of the application. Get a detailed breakdown of probabilities, averages, historical records, and trends for a specific location and date range.
 *   🤔 **Location Comparison Tool:** Can't decide between two destinations? Analyze two locations side-by-side to see which has the better historical weather for your dates.
 *   🏆 **"Perfect Day" Finder:** The ultimate prescriptive tool. Define your ideal weather conditions (e.g., "Sunny," "Not Hot," "No Rain"), and the app will analyze the entire year to recommend the best weeks for your activity.
-*   🗺️ **Regional Heatmap Explorer:** A high-performance, architecturally sound tool to visualize the probability of "hot days" across entire regions, updating as you pan and zoom.
 *   ⚙️ **Personalized Thresholds:** Empower the user by letting them define what "hot," "cold," or "windy" means to them.
 *   📈 **Navigable Trend Charts:** Go beyond a single chart. Interactively explore the historical data series for temperature, wind, humidity, precipitation, and more.
 *   💾 **Data Export:** Download the summary analysis in JSON or CSV format for your own projects.
@@ -95,8 +76,8 @@ To run this project locally, follow these steps:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/[your-username]/[your-repo-name].git
-cd [your-repo-name]/backend
+git clone https://github.com/Mohitmhatre32/Weatherprob.git
+cd [Weatherprob]/backend
 
 # 2. Create and activate a virtual environment
 python -m venv venv
@@ -115,11 +96,6 @@ pip install -r requirements.txt
 python app.py
 # The backend will be running at http://127.0.0.1:5000
 2. Frontend Setup
-code
-Bash
-download
-content_copy
-expand_less
 # 1. Navigate to the frontend directory
 cd ../frontend
 
@@ -155,14 +131,8 @@ Challenge Name: "Will It Rain on My Parade?"
 
 Author
 
-[Your Name]
+Mohit Mhatre & Yukta Chaudhari 
 
-GitHub: @your-github
+GitHub: https://github.com/Mohitmhatre32
 
-LinkedIn: Your LinkedIn Profile
-
-code
-Code
-download
-content_copy
-expand_less
+LinkedIn: www.linkedin.com/in/mohitmhatre
