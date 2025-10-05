@@ -1,138 +1,167 @@
-# WeatherProb: Historical Weather Probability Insights
+# 🌤️ WeatherProb: Historical Weather Probability Insights
 
-> Plan your future, historically. An advanced weather analytics dashboard powered by NASA Earth Observation Data.
+> **Plan your future, historically.**  
+> An advanced weather analytics dashboard powered by **NASA Earth Observation Data**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 
-**Live Demo:** [**weatherprob.vercel.app**](https://[your-app-url.vercel.app])
+**Live Demo:** [weatherprob.vercel.app](https://your-app-url.vercel.app)
 
-![WeatherProb Dashboard Screenshot](https://[Link-to-a-high-quality-screenshot-or-GIF-of-your-dashboard].png)
-
----
-
-## The Problem Statement
-
-Planning outdoor events—be it a vacation, a hike, a wedding, or a local parade—months in advance is a gamble against the weather. Standard weather forecasts are only reliable for 1-2 weeks, leaving long-term plans vulnerable to chance. While historical "averages" exist, they are often too generic and don't answer specific, critical questions like:
-*   "What's the *actual chance* of a dangerously hot day for my July beach trip?"
-*   "I want to go hiking. Which week in September has the highest probability of sunny, cool, and dry weather?"
-*   "For my ski trip, should I book the first week of December or the last?"
-
-## Our Solution: WeatherProb
-
-**WeatherProb** is a sophisticated web application that transforms this uncertainty into quantifiable risk. It's not a short-term forecast; it's a powerful **historical odds calculator**. By leveraging decades of NASA's daily global weather data, our application provides statistical probabilities and deep analytical insights for any location on Earth, for any time of the year.
-
-Our mission is to empower users to move beyond guesswork and make data-driven decisions, turning long-term planning from a gamble into a calculated strategy.
+![WeatherProb Dashboard Screenshot](https://your-screenshot-link.png)
 
 ---
 
-## Key Features
+## 🧩 Problem Statement
 
-WeatherProb is a feature-rich platform designed to provide a comprehensive and personalized weather analysis experience.
+Planning outdoor events — be it a **vacation**, **hike**, **wedding**, or **local parade** — months in advance is a gamble against the weather.  
+Standard weather forecasts are only reliable for a few days, leaving long-term plans uncertain.
 
-*   📊 **Single Analysis Dashboard:** The core of the application. Get a detailed breakdown of probabilities, averages, historical records, and trends for a specific location and date range.
-*   🤔 **Location Comparison Tool:** Can't decide between two destinations? Analyze two locations side-by-side to see which has the better historical weather for your dates.
-*   🏆 **"Perfect Day" Finder:** The ultimate prescriptive tool. Define your ideal weather conditions (e.g., "Sunny," "Not Hot," "No Rain"), and the app will analyze the entire year to recommend the best weeks for your activity.
-*   ⚙️ **Personalized Thresholds:** Empower the user by letting them define what "hot," "cold," or "windy" means to them.
-*   📈 **Navigable Trend Charts:** Go beyond a single chart. Interactively explore the historical data series for temperature, wind, humidity, precipitation, and more.
-*   💾 **Data Export:** Download the summary analysis in JSON or CSV format for your own projects.
+While historical averages exist, they rarely answer specific questions like:
+- “What’s the *actual chance* of a dangerously hot day for my July beach trip?”
+- “Which week in September has the highest probability of sunny, cool, and dry weather?”
+- “Should I book my ski trip in early or late December?”
 
 ---
 
-## Screenshots
+## 💡 Our Solution: WeatherProb
 
-*(Replace these with your own high-quality screenshots!)*
+**WeatherProb** transforms uncertainty into **quantifiable probability**.
+
+It’s not a forecast — it’s a **historical odds calculator**.  
+By analyzing decades of NASA’s daily global weather data, WeatherProb gives you clear, data-backed insights for **any location** and **any time of year**.
+
+Our mission:  
+➡️ Empower users to move beyond guesswork and make **data-driven decisions** for long-term planning.
+
+---
+
+## 🚀 Key Features
+
+WeatherProb is packed with tools designed to make weather analysis intuitive and insightful.
+
+- 🌍 **Interactive 3D Globe & Map** — Select any location with ease using **Vanta.js** and **Leaflet**.
+- 📊 **Single Analysis Dashboard** — View probabilities, averages, records, and trends in one place.
+- ⚖️ **Location Comparison Tool** — Compare two locations side by side for better planning.
+- 🏆 **“Perfect Day” Finder** — Define your ideal weather and discover the best dates to plan your activity.
+- 🗺️ **High-Performance Heatmap Explorer** — Visualize global weather probability hotspots.
+- ⚙️ **Personalized Thresholds** — Customize what “hot,” “cold,” or “windy” means for you.
+- 📈 **Interactive Trend Charts** — Explore long-term data for temperature, humidity, and precipitation.
+- 💾 **Data Export** — Download your analysis as **JSON** or **CSV** for external use.
+
+---
+
+## 🖼️ Screenshots
+
+*(Replace placeholders with your actual screenshots)*
 
 | Main Dashboard | Location Comparison |
 | :---: | :---: |
-| ![Main Dashboard](https://[Link-to-your-main-dashboard-screenshot].png) | ![Location Comparison](https://[Link-to-your-comparison-tool-screenshot].png) |
+| ![Main Dashboard](https://your-dashboard-image.png) | ![Location Comparison](https://your-comparison-image.png) |
 
 | Perfect Day Finder | Regional Heatmap |
 | :---: | :---: |
-| ![Perfect Day Finder](https://[Link-to-your-finder-screenshot].png) | ![Regional Heatmap](https://[Link-to-your-heatmap-screenshot].png) |
+| ![Perfect Day Finder](https://your-finder-image.png) | ![Heatmap Explorer](https://your-heatmap-image.png) |
 
 ---
 
-## Tech Stack
+## 🧱 Tech Stack
 
-This project is built with a modern, robust, and scalable full-stack architecture.
-
-| Category | Technology |
-| :--- | :--- |
+| Category | Technologies |
+| :-- | :-- |
 | **Frontend** | React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Recharts, Leaflet, Vanta.js |
 | **Backend** | Python, Flask, Pandas, NumPy |
-| **Data Source** | **NASA POWER API** (Regional & Point-based services) |
+| **Data Source** | NASA POWER API (Daily Point & Regional Services) |
 | **Deployment** | Vercel (Frontend), Render (Backend) |
 
 ---
 
-## Local Development Setup
+## 🧑‍💻 Local Development Setup
 
-To run this project locally, follow these steps:
-
-### 1. Backend Setup
+### 1️⃣ Backend Setup
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/Mohitmhatre32/Weatherprob.git
-cd [Weatherprob]/backend
+cd Weatherprob/backend
 
-# 2. Create and activate a virtual environment
+# Create a virtual environment
 python -m venv venv
+
+# Activate it
 # On Windows:
-# .\venv\Scripts\activate
-# On Mac/Linux:
-# source venv/bin/activate
+.\venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
-# 3. Create a requirements.txt file (if you haven't already)
-# pip freeze > requirements.txt
-
-# 4. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 5. Run the Flask server
+# Run the Flask server
 python app.py
-# The backend will be running at http://127.0.0.1:5000
-2. Frontend Setup
-# 1. Navigate to the frontend directory
+# Backend runs at http://127.0.0.1:5000
+
+
+
+# Navigate to frontend
 cd ../frontend
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Run the Vite development server
+# Run the Vite dev server
 npm run dev
-# The frontend will be running at http://localhost:5173 (or another port if 5173 is busy)
-Data Source
+# Frontend runs at http://localhost:5173
 
-This project is powered exclusively by the NASA POWER (Prediction of Worldwide Energy Resources) Project. This service provides analysis-ready data derived from NASA's state-of-the-art modeling systems, including the foundational MERRA-2 and GEOS-5 datasets.
 
-We utilize both the Daily Point API for single-location analysis and the Daily Regional API for our efficient heatmap feature.
 
-You can explore the data source visually via the NASA POWER Data Access Viewer.
+☀️ Data Source
 
-Future Vision
+This project uses the NASA POWER (Prediction of Worldwide Energy Resources) API.
+It provides global, analysis-ready data derived from NASA’s MERRA-2 and GEOS-5 datasets.
 
-While WeatherProb is a feature-complete application, we have a clear vision for its future:
+We use:
 
-Regional Polygon Analysis: Allow users to draw a custom shape on the map (e.g., around a national park) to get aggregated stats for that specific area.
+Daily Point API for single-location analysis
 
-Activity-Based Recommendations: A feature where a user can select an activity like "Skiing" or "Beach Day," and the app will automatically apply the best weather criteria to the "Perfect Day Finder."
+Daily Regional API for generating the global heatmap feature
 
-Public API: Expose our analysis endpoint as a public API to allow other developers to build applications on top of our data processing engine.
+🔗 Explore the data source: NASA POWER Data Access Viewer
 
-About the Challenge
+🔮 Future Vision
+
+WeatherProb’s roadmap includes exciting next steps:
+
+🗺️ Regional Polygon Analysis — Draw areas on the map to aggregate weather stats.
+
+🎯 Activity-Based Recommendations — Automatically find the best dates for skiing, hiking, or beach days.
+
+🔗 Public API — Expose the analysis engine to developers for open data use.
+
+🧠 About the Challenge
 
 Hackathon: NASA Space Apps Challenge 2025
 
-Challenge Name: "Will It Rain on My Parade?"
+Challenge Name: “Will It Rain on My Parade?”
 
-Author
+👥 Authors
 
-Mohit Mhatre & Yukta Chaudhari 
+Mohit Mhatre
 
-GitHub: https://github.com/Mohitmhatre32
+GitHub: @Mohitmhatre32
 
-LinkedIn: www.linkedin.com/in/mohitmhatre
+LinkedIn: mohitmhatre
+
+Yukta Chaudhari
+
+GitHub: @YourGitHubHandle
+
+LinkedIn: Your LinkedIn Profile
+
+🪪 License
+
+This project is licensed under the MIT License
+.
+Feel free to use, modify, and share — just credit the authors.
