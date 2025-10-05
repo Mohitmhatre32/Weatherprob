@@ -40,11 +40,13 @@ const ChangeView = ({ center, zoom }: { center: LatLngExpression; zoom: number }
   return null;
 };
 
+// --- MODIFIED: Added showMap property ---
 interface LocationSelectorProps {
   onLocationSelect: (location: Location | null) => void;
+  showMap?: boolean; // This is the new optional prop
 }
 
-const LocationSelector = ({ onLocationSelect }: LocationSelectorProps) => {
+const LocationSelector = ({ onLocationSelect, showMap = true }: LocationSelectorProps) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +139,7 @@ const LocationSelector = ({ onLocationSelect }: LocationSelectorProps) => {
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="e.g., New York, or click map"
+              placeholder={showMap ? "e.g., New York, or click map" : "e.g., New York"}
               value={query}
               onChange={(e) => { setQuery(e.target.value); if (statusMessage) setStatusMessage(null); }}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -155,17 +157,22 @@ const LocationSelector = ({ onLocationSelect }: LocationSelectorProps) => {
           )}
         </div>
       </div>
-      <div className="h-64 w-full rounded-md overflow-hidden border z-0">
-        <MapContainer center={mapCenter} zoom={markerPosition ? 10 : 2} style={{ height: '100%', width: '100%' }}>
-          <ChangeView center={mapCenter} zoom={markerPosition ? 10 : 2} />
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <MapClickHandler onMapClick={(lat, lon) => handleLocationUpdate(lat, lon)} />
-          {markerPosition && <Marker position={markerPosition} icon={markerIcon} />}
-        </MapContainer>
-      </div>
+
+      {/* --- MODIFIED: The map only renders if showMap is true --- */}
+      {showMap && (
+        <div className="h-64 w-full rounded-md overflow-hidden border z-0">
+          <MapContainer center={mapCenter} zoom={markerPosition ? 10 : 2} style={{ height: '100%', width: '100%' }}>
+            <ChangeView center={mapCenter} zoom={markerPosition ? 10 : 2} />
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapClickHandler onMapClick={(lat, lon) => handleLocationUpdate(lat, lon)} />
+            {markerPosition && <Marker position={markerPosition} icon={markerIcon} />}
+          </MapContainer>
+        </div>
+      )}
+
       {statusMessage && (
         <p className="text-sm text-muted-foreground pt-2">{statusMessage}</p>
       )}
