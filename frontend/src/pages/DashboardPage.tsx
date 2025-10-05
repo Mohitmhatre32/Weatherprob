@@ -15,8 +15,11 @@ import { DateRange } from "react-day-picker";
 import CombinedAnalysis from "@/components/dashboard/CombinedAnalysis";
 import ComparisonTool from "@/components/dashboard/ComparisonTool";
 import HeatmapExplorer from "@/components/dashboard/HeatmapExplorer";
+// --- 1. IMPORT THE NEW COMPONENT ---
+import PerfectDayFinder from "@/components/dashboard/PerfectDayFinder";
 
-const convertJsonToCsv = (data: WeatherStats): string => {
+// This CSV conversion function is unchanged
+const convertJsonToCsv = (data: WeatherStats): string => { /* ... (your original function) ... */ 
   const flatData = {
     total_years_analyzed: data.total_years_analyzed,
     prob_hot_percent: data.probabilities.hot,
@@ -51,12 +54,16 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("dashboard");
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = async () => { /* ... (your original function is unchanged) ... */ 
     if (!location || !dateRange || !dateRange.from || !dateRange.to) {
       setValidationError("Please select a location and a complete date range before analyzing.");
       return;
     }
+
+  
+  window.scrollTo({ top: 0, behavior: "smooth" });
     setIsLoading(true);
     setError(null);
     setResults(null);
@@ -84,8 +91,7 @@ const DashboardPage = () => {
       setIsLoading(false);
     }
   };
-
-  const handleDownloadJson = () => {
+  const handleDownloadJson = () => { /* ... (your original function is unchanged) ... */ 
     if (!results || !location || !dateRange || !dateRange.from) return;
     const dateString = format(dateRange.from, "yyyy-MM-dd");
     const locationString = location.name.split(',')[0].replace(/ /g, '_');
@@ -96,8 +102,7 @@ const DashboardPage = () => {
     link.download = fileName;
     link.click();
   };
-
-  const handleDownloadCsv = () => {
+  const handleDownloadCsv = () => { /* ... (your original function is unchanged) ... */ 
     if (!results || !location || !dateRange || !dateRange.from) return;
     const dateString = format(dateRange.from, "yyyy-MM-dd");
     const locationString = location.name.split(',')[0].replace(/ /g, '_');
@@ -112,6 +117,11 @@ const DashboardPage = () => {
     document.body.removeChild(link);
   };
 
+  const handlePeriodSelect = (selectedRange: DateRange) => {
+    setDateRange(selectedRange);
+    setActiveTab("dashboard");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -121,15 +131,18 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* --- THIS IS THE FIX --- */}
       <div className="container mx-auto px-4 py-8 relative z-10">
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 max-w-2xl mx-auto">
+        {/* --- 4. CONTROL THE TABS WITH YOUR NEW STATE --- */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {/* --- 5. ADD THE NEW "FINDER" TAB --- */}
+          <TabsList className="grid w-full grid-cols-4 mb-8 max-w-3xl mx-auto">
             <TabsTrigger value="dashboard">Single Analysis</TabsTrigger>
-            <TabsTrigger value="comparison">Comparison Analysis</TabsTrigger>
-            <TabsTrigger value="explorer">Explorer</TabsTrigger>
+            <TabsTrigger value="finder">Best Time Finder</TabsTrigger>
+            <TabsTrigger value="comparison">Comparison</TabsTrigger>
+            <TabsTrigger value="explorer">Heatmap Explorer</TabsTrigger>
           </TabsList>
 
+          {/* Your original "dashboard" tab content is unchanged */}
           <TabsContent value="dashboard">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 space-y-6">
@@ -159,11 +172,16 @@ const DashboardPage = () => {
               </div>
             </div>
           </TabsContent>
+          
+          {/* --- 6. ADD THE TABS CONTENT FOR THE NEW FEATURE --- */}
+          <TabsContent value="finder">
+            <PerfectDayFinder onPeriodSelect={handlePeriodSelect} />
+          </TabsContent>
 
+          {/* Your other feature tabs are unchanged */}
           <TabsContent value="comparison">
             <ComparisonTool />
           </TabsContent>
-
           <TabsContent value="explorer">
             <HeatmapExplorer />
           </TabsContent>

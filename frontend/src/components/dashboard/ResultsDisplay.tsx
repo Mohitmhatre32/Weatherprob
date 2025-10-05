@@ -6,6 +6,7 @@ import type { WeatherStats } from "@/types/weather";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Sun, Thermometer, Wind, CloudRain, Droplets, Snowflake, ShieldAlert, TrendingUp, TrendingDown, Minus, Info, AlertTriangle, PartyPopper, CheckSquare } from "lucide-react";
 import TrendsChartContainer from "../TrendsChartContainer";
+import Loader from "@/hooks/loader";
 
 interface ResultsDisplayProps {
   results: WeatherStats | null;
@@ -53,7 +54,11 @@ const ResultsDisplay = ({ results, isLoading, error }: ResultsDisplayProps) => {
   const trendIcon = results ? (results.trend.temp_trend_label === 'warming' ? <TrendingUp className="h-5 w-5 text-red-500" /> : results.trend.temp_trend_label === 'cooling' ? <TrendingDown className="h-5 w-5 text-blue-500" /> : <Minus className="h-5 w-5 text-gray-500" />) : null;
 
   if (isLoading && !results) { // Show full-page loader only on initial load
-    return <div className="flex items-center justify-center h-96"><p className="text-lg text-muted-foreground animate-pulse">Fetching and analyzing decades of NASA data...</p></div>;
+   return (
+    <div className="flex items-center justify-center h-96">
+      <Loader />
+    </div>
+  );
   }
   if (error) {
     return <div className="flex items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed"><p className="text-lg text-red-500">{error}</p></div>;

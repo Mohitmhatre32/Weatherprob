@@ -198,5 +198,93 @@ def get_weather_stats():
 
     return jsonify(processed_stats)
 
+
+def analyze_perfect_day_score(df, period_start, period_end, criteria, thresholds):
+    """Calculates the 'perfect day' score for a specific time period."""
+    if period_start <= period_end:
+        period_df = df[df['date'].dt.dayofyear.between(period_start, period_end)]
+    else: # Handles periods wrapping around the new year (e.g., Dec 15 - Jan 5)
+        period_df = df[(df['date'].dt.dayofyear >= period_start) | (df['date'].dt.dayofyear <= period_end)]
+    
+    if period_df.empty:
+        return 0
+
+    # Build the combined condition based on user criteria
+    conditions = []
+    if 'sunny' in criteria: conditions.append(period_df['ALLSKY_SFC_SW_DWN'] > thresholds['sunny'])
+    if 'not_hot' in criteria: conditions.append(period_df['T2M_MAX_F'] <= thresholds['hot'])
+    if 'not_cold' in criteria: conditions.append(period_df['T2M_MIN_F'] >= thresholds['cold'])
+    if 'not_windy' in criteria: conditions.append(period_df['WS10M_MPH'] <= thresholds['windy'])
+    if 'not_humid' in criteria: conditions.append(period_df['RH2M'] <= thresholds['humid'])
+    if 'no_rain' in criteria: conditions.append(period_df['PRECTOTCORR_IN'] <= 0.01) # Check for minimal rain
+    if 'no_snow' in criteria: conditions.append(period_df['PRECSNOLAND'] <= 0.1)     # Check for minimal snow
+
+    if not conditions:
+        return 0 # If no criteria are selected, the score is 0
+        
+    final_condition = np.logical_and.reduce(conditions)
+    perfect_days = period_df[final_condition].shape[0]
+    total_days = len(period_df)
+    
+    return round((perfect_days / total_days) * 100) if total_days > 0 else 0
+
+@app.route('/api/find-perfect-day', methods=['POST'])
+def find_perfect_day():
+    data = request.get_json()
+    if not all(k in data for k in ['lat', 'lon', 'criteria']):
+        return jsonify({"error": "Missing required parameters"}), 400
+
+    lat, lon = float(data['lat']), float(data['lon'])
+    criteria = data['criteria']
+    thresholds = data.get('thresholds', { # Use defaults if not provided
+        'hot': DEFAULT_TEMP_HOT_F, 'cold': DEFAULT_TEMP_COLD_F,
+        'windy': DEFAULT_WIND_HIGH_MPH, 'humid': DEFAULT_HUMID_PERCENT,
+        'sunny': DEFAULT_SUNNY_KWHR
+    })
+
+    # Step 1: Fetch the full year's data ONCE.
+    nasa_data = fetch_nasa_data(lat, lon)
+    if nasa_data is None or 'properties' not in nasa_data:
+        return jsonify({"error": "Failed to fetch valid data from NASA"}), 500
+
+    # Step 2: Pre-process the entire DataFrame.
+    properties = nasa_data['properties']['parameter']
+    df = pd.DataFrame(properties)
+    df['date'] = pd.to_datetime(df.index, format='%Y%m%d')
+    df['T2M_MAX_F'] = df['T2M_MAX'] * 9/5 + 32
+    df['T2M_MIN_F'] = df['T2M_MIN'] * 9/5 + 32
+    df['WS10M_MPH'] = df['WS10M'] * 2.237
+    df['PRECTOTCORR_IN'] = df['PRECTOTCORR'] / 25.4
+    # All other conversions...
+    df['HEAT_INDEX_F'] = calculate_heat_index(df['T2M_MAX_F'], df['RH2M'])
+    
+    # Step 3: Define bi-weekly periods and analyze each one.
+    periods = [
+        {"name": "Early January", "start": 1, "end": 15}, {"name": "Late January", "start": 16, "end": 31},
+        {"name": "Early February", "start": 32, "end": 46}, {"name": "Late February", "start": 47, "end": 59},
+        {"name": "Early March", "start": 60, "end": 74}, {"name": "Late March", "start": 75, "end": 90},
+        {"name": "Early April", "start": 91, "end": 105}, {"name": "Late April", "start": 106, "end": 120},
+        {"name": "Early May", "start": 121, "end": 135}, {"name": "Late May", "start": 136, "end": 151},
+        {"name": "Early June", "start": 152, "end": 166}, {"name": "Late June", "start": 167, "end": 181},
+        {"name": "Early July", "start": 182, "end": 196}, {"name": "Late July", "start": 197, "end": 212},
+        {"name": "Early August", "start": 213, "end": 227}, {"name": "Late August", "start": 228, "end": 243},
+        {"name": "Early September", "start": 244, "end": 258}, {"name": "Late September", "start": 259, "end": 273},
+        {"name": "Early October", "start": 274, "end": 288}, {"name": "Late October", "start": 289, "end": 304},
+        {"name": "Early November", "start": 305, "end": 319}, {"name": "Late November", "start": 320, "end": 334},
+        {"name": "Early December", "start": 335, "end": 349}, {"name": "Late December", "start": 350, "end": 366},
+    ]
+
+    results = []
+    for period in periods:
+        score = analyze_perfect_day_score(df, period["start"], period["end"], criteria, thresholds)
+        if score > 0:
+            results.append({"period": period["name"], "score": score, "start_day": period["start"], "end_day": period["end"]})
+    
+    # Step 4: Sort and return the top results.
+    sorted_results = sorted(results, key=lambda x: x["score"], reverse=True)
+    
+    return jsonify(sorted_results[:5]) # Return the top 5 best periods
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
