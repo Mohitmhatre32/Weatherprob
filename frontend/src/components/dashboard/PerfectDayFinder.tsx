@@ -1,5 +1,3 @@
-// src/components/dashboard/PerfectDayFinder.tsx
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -18,7 +16,6 @@ interface PerfectDayResult {
 }
 
 interface PerfectDayFinderProps {
-  // This function will allow us to update the main dashboard's date range
   onPeriodSelect: (range: DateRange) => void;
 }
 
@@ -127,13 +124,10 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
           {/* --- 2. THE MODIFIED CARD CONTENT --- */}
           <CardContent className="min-h-[300px] flex items-center justify-center">
             {isLoading ? (
-              // If loading, show the Loader component
               <Loader />
             ) : error ? (
-              // If there's an error, show the error message
               <p className="text-destructive font-semibold p-4 bg-destructive/10 rounded-md">{error}</p>
             ) : results.length > 0 ? (
-              // If we have results, show the list
               <div className="w-full">
                 <ul className="space-y-3">
                   {results.map(result => (
@@ -143,10 +137,9 @@ const PerfectDayFinder = ({ onPeriodSelect }: PerfectDayFinderProps) => {
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm text-muted-foreground pt-4 mt-4 border-t">Click on a result to automatically set the date range and view the detailed analysis in the "Single Analysis" tab.</p>
+                {/* <p className="text-sm text-muted-foreground pt-4 mt-4 border-t">Click on a result to automatically set the date range and view the detailed analysis in the "Single Analysis" tab.</p> */}
               </div>
             ) : (
-              // Otherwise, show the initial "ready" message
               <p className="text-muted-foreground text-center py-10">Your results will appear here after analysis.</p>
             )}
           </CardContent>

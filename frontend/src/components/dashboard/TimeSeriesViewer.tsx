@@ -1,15 +1,14 @@
 // src/components/dashboard/TimeSeriesViewer.tsx
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { WeatherStats } from '@/types/weather';
-// --- MODIFIED: Swapped BarChart for LineChart ---
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TimeSeriesViewerProps {
-    timeSeriesData: WeatherStats['full_time_series'];
+    timeSeriesData: NonNullable<WeatherStats['full_time_series']>;
 }
 
 const chartConfigs = [
@@ -39,14 +38,19 @@ const TimeSeriesViewer = ({ timeSeriesData }: TimeSeriesViewerProps) => {
         return <p>No time series data available.</p>;
     }
 
-    // Format X-axis ticks to only show the year
-    const formatXAxis = (tickItem: string) => {
-        return new Date(tickItem).getFullYear().toString();
-    };
+    // --- THIS IS THE CORRECT FIX ---
+    // 1. Generate static year strings for the ticks
+    const yearTicks = [];
+    for (let year = 1990; year <= 2024; year += 2) {
+        yearTicks.push(year.toString());
+    }
 
-    // Create a unique list of years for ticks, showing one every 5 years for clarity
-    const yearTicks = Array.from(new Set(timeSeriesData.map(d => new Date(d.date).getFullYear())))
-        .filter(year => year % 5 === 0);
+    // 2. Format the data's date into just the year for the axis to match against
+    const processedData = useMemo(() =>
+        timeSeriesData.map(d => ({
+            ...d,
+            yearLabel: new Date(d.date).getFullYear().toString(),
+        })), [timeSeriesData]);
 
     return (
         <Card>
@@ -65,23 +69,25 @@ const TimeSeriesViewer = ({ timeSeriesData }: TimeSeriesViewerProps) => {
             <CardContent className="h-[400px] w-full">
                 <div className="text-center mb-4 font-semibold text-lg">{currentChart.name}</div>
                 <ResponsiveContainer>
-                    <LineChart data={timeSeriesData} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
+                    <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" />
 
                         <XAxis
-                            dataKey="date"
-                            tickFormatter={formatXAxis}
+                            dataKey="yearLabel"
+                            type="category"
                             ticks={yearTicks}
+                            interval={0}
                             label={{ value: 'Year', position: 'insideBottom', offset: -15 }}
                         />
 
                         <YAxis
-                            label={{ value: yAxisUnit, angle: -90, position: 'insideLeft' }}
+                            label={{ value: yAxisUnit, angle: -90, position: 'insideLeft', offset: -5 }}
+                            domain={['dataMin', 'auto']}
                         />
 
                         <Tooltip
-                            labelFormatter={(label) => `Date: ${label}`}
-                            formatter={(value, name) => [`${Number(value).toFixed(2)} ${yAxisUnit}`, name]}
+                            labelFormatter={(label, payload) => `Date: ${payload[0]?.payload.date}`}
+                            formatter={(value) => [`${Number(value).toFixed(2)} ${yAxisUnit}`, currentChart.name]}
                         />
 
                         <Line

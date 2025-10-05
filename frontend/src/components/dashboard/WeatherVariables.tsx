@@ -1,12 +1,7 @@
-// src/components/dashboard/WeatherVariables.tsx
-
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-// Import all the icons we'll use for a consistent visual language
 import { Sun, Thermometer, Wind, CloudRain, Droplets, Snowflake, ShieldAlert, BarChartHorizontal } from "lucide-react";
 
-// We'll create a data structure to hold all our variable information.
-// This makes the code cleaner and easier to update.
 const variables = [
   {
     name: "Temperature",
@@ -56,7 +51,6 @@ const WeatherVariables = () => {
       {variables.map((variable) => (
         <Badge 
           key={variable.name} 
-          // We use variant="outline" as a base and apply our custom colors
           variant="outline"
           // The `cn` utility safely merges our base classes with the color classes
           className={cn(

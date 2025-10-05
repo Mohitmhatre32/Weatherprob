@@ -1,5 +1,3 @@
-// src/components/ResultsDisplay.tsx
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import type { WeatherStats } from "@/types/weather";

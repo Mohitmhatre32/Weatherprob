@@ -1,10 +1,3 @@
-# ==============================================================================
-# FINAL BACKEND - NASA Weather Odds Calculator (v5 - Full Time Series)
-#
-# Adds a `full_time_series` key to the response, providing raw daily data
-# for the new hydrology-style time series viewer.
-# ==============================================================================
-
 import os
 from datetime import datetime
 from flask import Flask, request, jsonify
@@ -17,9 +10,6 @@ from scipy.stats import gaussian_kde
 app = Flask(__name__)
 CORS(app)
 
-# ==============================================================================
-# SECTION 1: DEFAULT THRESHOLDS
-# ==============================================================================
 DEFAULT_TEMP_HOT_F = 90
 DEFAULT_TEMP_COLD_F = 32
 DEFAULT_WIND_HIGH_MPH = 15
@@ -29,9 +19,6 @@ DEFAULT_SUNNY_KWHR = 5.0
 DEFAULT_SNOWY_MM = 1.0
 DEFAULT_HEAT_INDEX_UNCOMFORTABLE_F = 95.0
 
-# ==============================================================================
-# SECTION 2: HELPER FUNCTIONS
-# ==============================================================================
 
 def fetch_nasa_data(lat, lon):
     """Fetches all required weather parameters from the NASA POWER API."""
@@ -206,7 +193,7 @@ def analyze_perfect_day_score(df, period_start, period_end, criteria, thresholds
     """Calculates the 'perfect day' score for a specific time period."""
     if period_start <= period_end:
         period_df = df[df['date'].dt.dayofyear.between(period_start, period_end)]
-    else: # Handles periods wrapping around the new year (e.g., Dec 15 - Jan 5)
+    else: # Handles periods wrapping around the new year
         period_df = df[(df['date'].dt.dayofyear >= period_start) | (df['date'].dt.dayofyear <= period_end)]
     
     if period_df.empty:

@@ -23,7 +23,6 @@ const DateRangeSelector = ({ value, onDateChange }: DateRangeSelectorProps) => {
     const toMonth = value?.to?.getMonth();
     const toDay = value?.to?.getDate();
 
-    // Use a fixed year (e.g., a leap year) for calculations to keep it simple
     const year = 2024;
 
     const handleFromMonthChange = (monthStr: string) => {
@@ -85,13 +84,13 @@ const DateRangeSelector = ({ value, onDateChange }: DateRangeSelectorProps) => {
                 <div className="flex gap-2">
                     <Select onValueChange={handleToMonthChange} value={toMonth?.toString()}>
                         <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[9999]">
                             {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select onValueChange={handleToDayChange} value={toDay?.toString()} disabled={toMonth === undefined}>
                         <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[9999]">
                             {Array.from({ length: toDaysInMonth }, (_, i) => i + 1).map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
                         </SelectContent>
                     </Select>

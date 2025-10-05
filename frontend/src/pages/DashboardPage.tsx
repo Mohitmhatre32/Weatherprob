@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.tsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,15 +20,24 @@ import PerfectDayFinder from "@/components/dashboard/PerfectDayFinder";
 
 const convertJsonToCsv = (data: WeatherStats): string => {
   const flatData = {
-    total_years_analyzed: data.total_years_analyzed, prob_hot_percent: data.probabilities.hot,
-    prob_cold_percent: data.probabilities.cold, prob_windy_percent: data.probabilities.windy,
-    prob_wet_percent: data.probabilities.wet, prob_humid_percent: data.probabilities.humid,
-    prob_sunny_percent: data.probabilities.sunny, prob_snowy_percent: data.probabilities.snowy,
-    prob_uncomfortable_percent: data.probabilities.uncomfortable, avg_high_f: data.averages.avg_high_f,
-    avg_low_f: data.averages.avg_low_f, avg_wind_mph: data.averages.avg_wind_mph,
-    avg_humidity_percent: data.averages.avg_humidity_percent, avg_pressure_mb: data.averages.avg_pressure_mb,
-    avg_insolation_kwhr: data.averages.avg_insolation_kwhr, avg_heat_index_f: data.averages.avg_heat_index_f,
-    record_high_f: data.records.record_high_f, record_low_f: data.records.record_low_f,
+    total_years_analyzed: data.total_years_analyzed,
+    prob_hot_percent: data.probabilities.hot,
+    prob_cold_percent: data.probabilities.cold,
+    prob_windy_percent: data.probabilities.windy,
+    prob_wet_percent: data.probabilities.wet,
+    prob_humid_percent: data.probabilities.humid,
+    prob_sunny_percent: data.probabilities.sunny,
+    prob_snowy_percent: data.probabilities.snowy,
+    prob_uncomfortable_percent: data.probabilities.uncomfortable,
+    avg_high_f: data.averages.avg_high_f,
+    avg_low_f: data.averages.avg_low_f,
+    avg_wind_mph: data.averages.avg_wind_mph,
+    avg_humidity_percent: data.averages.avg_humidity_percent,
+    avg_pressure_mb: data.averages.avg_pressure_mb,
+    avg_insolation_kwhr: data.averages.avg_insolation_kwhr,
+    avg_heat_index_f: data.averages.avg_heat_index_f,
+    record_high_f: data.records.record_high_f,
+    record_low_f: data.records.record_low_f,
     temp_trend_label: data.trend.temp_trend_label,
   };
   const header = Object.keys(flatData).join(',');
@@ -42,6 +51,23 @@ const TimeSeriesTab = () => {
   const [timeSeriesData, setTimeSeriesData] = useState<WeatherStats['full_time_series'] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const cachedData = localStorage.getItem('timeSeriesTabCache');
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        if (parsed.inputs.dateRange?.from) parsed.inputs.dateRange.from = new Date(parsed.inputs.dateRange.from);
+        if (parsed.inputs.dateRange?.to) parsed.inputs.dateRange.to = new Date(parsed.inputs.dateRange.to);
+        setLocation(parsed.inputs.location);
+        setDateRange(parsed.inputs.dateRange);
+        setTimeSeriesData(parsed.results);
+      } catch (e) {
+        console.error("Failed to parse cached Time Series data:", e);
+        localStorage.removeItem('timeSeriesTabCache');
+      }
+    }
+  }, []);
 
   const handleAnalyze = async () => {
     if (!location || !dateRange?.from || !dateRange?.to) {
@@ -67,8 +93,16 @@ const TimeSeriesTab = () => {
       if (!response.ok) throw new Error(data.error || "Failed to fetch data.");
       if (!data.full_time_series) throw new Error("Time series data is missing in the API response.");
       setTimeSeriesData(data.full_time_series);
+
+      const cachePayload = {
+        inputs: { location, dateRange },
+        results: data.full_time_series
+      };
+      localStorage.setItem('timeSeriesTabCache', JSON.stringify(cachePayload));
+
     } catch (e) {
       setError(e instanceof Error ? e.message : "An unknown error occurred.");
+      localStorage.removeItem('timeSeriesTabCache');
     } finally {
       setIsLoading(false);
     }
@@ -99,9 +133,7 @@ const TimeSeriesTab = () => {
           </div>
         </CardContent>
       </Card>
-
       {error && (<div className="flex items-center justify-center gap-3 text-red-500 bg-red-100 p-4 rounded-md"><AlertTriangle className="h-5 w-5" /><p className="font-medium">{error}</p></div>)}
-
       {!isLoading && !error && !timeSeriesData && (
         <div className="flex flex-col items-center justify-center h-96 bg-muted/30 rounded-lg border-2 border-dashed text-center p-4">
           <Info className="h-10 w-10 text-primary mb-4" />
@@ -112,7 +144,7 @@ const TimeSeriesTab = () => {
       {timeSeriesData && <TimeSeriesViewer timeSeriesData={timeSeriesData} />}
     </div>
   );
-}
+};
 
 const DashboardPage = () => {
   const [location, setLocation] = useState<Location | null>(null);
@@ -122,7 +154,25 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  useEffect(() => {
+    const cachedData = localStorage.getItem('weatherDashboardCache');
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        if (parsed.inputs.dateRange?.from) parsed.inputs.dateRange.from = new Date(parsed.inputs.dateRange.from);
+        if (parsed.inputs.dateRange?.to) parsed.inputs.dateRange.to = new Date(parsed.inputs.dateRange.to);
+        setLocation(parsed.inputs.location);
+        setDateRange(parsed.inputs.dateRange);
+        setCombinedFactors(parsed.inputs.combinedFactors);
+        setResults(parsed.results);
+      } catch (e) {
+        console.error("Failed to parse cached dashboard data:", e);
+        localStorage.removeItem('weatherDashboardCache');
+      }
+    }
+  }, []);
 
   const handleAnalyze = async () => {
     if (!location || !dateRange || !dateRange.from || !dateRange.to) {
@@ -149,9 +199,15 @@ const DashboardPage = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || `HTTP error! Status: ${response.status}`);
       setResults(data);
+      const cachePayload = {
+        inputs: { location, dateRange, combinedFactors },
+        results: data
+      };
+      localStorage.setItem('weatherDashboardCache', JSON.stringify(cachePayload));
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
       setError(`Failed to fetch weather data: ${errorMessage}`);
+      localStorage.removeItem('weatherDashboardCache');
     } finally {
       setIsLoading(false);
     }
@@ -192,20 +248,18 @@ const DashboardPage = () => {
     </div>
   );
 
-  
   const handlePeriodSelect = (selectedRange: DateRange) => {
     setDateRange(selectedRange);
     setActiveTab("dashboard");
   };
- return (
+
+  return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Weather Analytics Dashboard</h1>
         <p className="text-muted-foreground">Powered by NASA Earth Observation Data</p>
       </div>
-      {/* --- 4. CONTROL THE TABS WITH STATE --- */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* --- 5. ADD THE NEW TAB TRIGGER --- */}
         <TabsList className="grid w-full grid-cols-4 mb-8 max-w-2xl mx-auto">
           <TabsTrigger value="dashboard">Single Analysis</TabsTrigger>
           <TabsTrigger value="finder">Best Time Finder</TabsTrigger>
@@ -214,7 +268,6 @@ const DashboardPage = () => {
         </TabsList>
 
         <TabsContent value="dashboard">
-          {/* ... (Your original "dashboard" content is unchanged) ... */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <Card className="shadow-lg"><CardHeader><CardTitle>1. Location</CardTitle><CardDescription>Enter a location or click the map</CardDescription></CardHeader><CardContent><LocationSelector onLocationSelect={setLocation} /></CardContent></Card>
@@ -247,12 +300,10 @@ const DashboardPage = () => {
           </div>
         </TabsContent>
 
-        {/* --- 6. ADD THE NEW TAB CONTENT --- */}
         <TabsContent value="finder">
           <PerfectDayFinder onPeriodSelect={handlePeriodSelect} />
         </TabsContent>
 
-        {/* Your other tabs are unchanged */}
         <TabsContent value="comparison">
           <ComparisonTool />
         </TabsContent>

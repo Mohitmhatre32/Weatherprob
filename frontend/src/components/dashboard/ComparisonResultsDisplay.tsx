@@ -1,4 +1,4 @@
-// src/components/dashboard/ComparisonResultsDisplay.tsx
+
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WeatherStats } from "@/types/weather";
@@ -9,12 +9,10 @@ interface ComparisonResultsDisplayProps {
     resultsB: WeatherStats;
 }
 
-// A helper component for each row in the comparison table
 const ComparisonRow = ({ label, valueA, valueB, unit = "", lowerIsBetter = false }) => {
     const isBetterA = lowerIsBetter ? valueA < valueB : valueA > valueB;
     const isBetterB = lowerIsBetter ? valueB < valueA : valueB > valueA;
 
-    // Avoid highlighting if values are equal
     const highlightA = valueA !== valueB && isBetterA;
     const highlightB = valueA !== valueB && isBetterB;
 

@@ -1,5 +1,3 @@
-// src/components/TrendsChartContainer.tsx
-
 import { useMemo, useState } from 'react';
 import type { WeatherStats } from '@/types/weather';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';

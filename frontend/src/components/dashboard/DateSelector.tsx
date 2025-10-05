@@ -1,5 +1,3 @@
-// src/components/dashboard/DateSelector.tsx
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DateSelectorProps {

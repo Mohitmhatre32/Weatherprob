@@ -1,5 +1,3 @@
-// src/components/Navigation.tsx
-
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Cloud, Menu, X } from "lucide-react";
