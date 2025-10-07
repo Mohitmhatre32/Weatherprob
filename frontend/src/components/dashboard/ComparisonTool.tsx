@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertTriangle } from "lucide-react";
 import ComparisonResultsDisplay from "./ComparisonResultsDisplay";
+const apiUrl = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const ComparisonTool = () => {
     const [locationA, setLocationA] = useState<Location | null>(null);
@@ -52,7 +53,7 @@ const ComparisonTool = () => {
         setResultsB(null);
         const formatDate = (date: Date) => format(date, "yyyy-MM-dd");
         const fetchScenario = (location: Location, dateRange: DateRange) => {
-            return fetch('http://127.0.0.1:5000/api/weather-stats', {
+            return fetch(`${apiUrl}/api/weather-stats`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

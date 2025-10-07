@@ -81,7 +81,7 @@ const TimeSeriesTab = () => {
     setTimeSeriesData(null);
     const formatDate = (date: Date) => format(date, "yyyy-MM-dd");
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/weather-stats', {
+      const response = await fetch(`${apiUrl}/api/weather-stats`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
